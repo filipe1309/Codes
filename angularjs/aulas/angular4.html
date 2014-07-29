@@ -1,0 +1,46 @@
+<!doctype html>
+<html ng-app>
+	<head>
+		<meta charset="utf-8">
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.8/angular.min.js"></script>
+	</head>
+	<body>
+		Busca: <input type="search" ng-model="busca">
+		
+		<div ng-controller="CtrlLista">
+			<div>
+				Total: <b>{{pessoas.length}}</b> 
+			</div>
+			<li ng-repeat="pessoa in pessoas | filter:busca">
+				{{pessoa.nome}}, <b>{{pessoa.cidade}}</b>
+				<button ng-click="rm($index)">Remover</button>
+			</li>
+			Nome: <input type="text" ng-model="vNome">
+			Cidade: <input type="text" ng-model="vCidade">
+			<button ng-click="add()">Add a lista</button>
+		</div>
+		<script type="text/javascript">
+			var CtrlLista = function($scope) {
+				$scope.pessoas = [
+					{nome:"Filipe", cidade:"Curitiba"},
+					{nome:"Elvis", cidade:"Las Vegas"},
+					{nome:"Kaka", cidade:"Milan"},
+					{nome:"Tolkien", cidade:"Joanesburgo"}
+				];
+
+				$scope.add = function() {
+					$scope.pessoas.push({
+						nome:$scope.vNome,
+						cidade:$scope.vCidade
+					});
+					$scope.vNome = "";
+					$scope.vCidade = "";
+				};
+
+				$scope.rm = function(index) {
+					$scope.pessoas.splice(index,1);
+				}
+			}
+		</script>
+	</body>
+</html>

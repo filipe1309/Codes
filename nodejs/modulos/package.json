@@ -1,0 +1,8 @@
+{
+  "name": "MyApp",
+  "version": "1.0.0",
+  "dependencies": {
+    "connect": "*",
+    "express": "~4.2.0"
+  }
+}

@@ -1,0 +1,19 @@
+<!doctype html>
+<html ng-app>
+	<head>
+		<meta charset="utf-8">
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.8/angular.min.js"></script>
+	</head>
+	<body>
+		<div ng-controller="CtrlModulo">
+			Meu nome é {{nome}}
+		</div>
+		<script type="text/javascript">
+			var CtrlModulo = function(s) {
+				s.nome = "Filipe";
+			};
+			//Injection para minificação
+			CtrlModulo.$inject= ['$scope'];
+		</script>
+	</body>
+</html>
