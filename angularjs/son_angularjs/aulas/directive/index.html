@@ -1,0 +1,31 @@
+<doctype html>
+<html ng-app="App">
+<head>
+	<title></title>
+	<meta charset="utf-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.21/angular.min.js"></script>
+</head>
+<body>
+	<div ng-controller="CtrlApp">
+		<button son-click="exec_click()">Click Here</button>
+	</div>
+	<script>
+		angular.module('App',[])
+			.directive('sonClick', function() {
+				return {
+					restrict: 'A', // Attribute
+					link: function(scope, element, attrs) {
+						element.bind('click', function() {
+							scope.$eval(attrs.sonClick);
+						})
+					}
+				};
+			})
+			.controller('CtrlApp', function($scope) {
+				$scope.exec_click = function() {
+					alert('Diretiva Clicada!');
+				}
+			});
+	</script>
+</body> 
+</html>
