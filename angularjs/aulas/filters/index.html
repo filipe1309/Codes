@@ -7,13 +7,18 @@
 </head>
 <body>
 	<div ng-controller="CtrlApp">
-		<h1>{{frase | upper}}</h1>
+		<h1>{{frase | lower}}</h1>
 	</div>
 	<script>
 		angular.module('App',[])
 			.filter('upper', function() {
 				return function(input) {
 					return input.toUpperCase()+' =) UPPER';
+				}
+			})
+			.filter('lower', function() {
+				return function(input) {
+					return input.toLowerCase()+' =) lower';
 				}
 			})
 			.controller('CtrlApp', function($scope) {
