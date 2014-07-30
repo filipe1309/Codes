@@ -7,7 +7,7 @@
 </head>
 <body>
 	<div ng-controller="CtrlApp">
-		<h1>{{frase | lower}}</h1>
+		<h1>{{frase | case:'upper'}}</h1>
 	</div>
 	<script>
 		angular.module('App',[])
@@ -19,6 +19,14 @@
 			.filter('lower', function() {
 				return function(input) {
 					return input.toLowerCase()+' =) lower';
+				}
+			})
+			.filter('case', function() {
+				return function(input, type) {
+					if(type === 'upper')
+						return input.toUpperCase()+' =) UPPER';
+					else
+						return input.toLowerCase()+' =) lower';
 				}
 			})
 			.controller('CtrlApp', function($scope) {
