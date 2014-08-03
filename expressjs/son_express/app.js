@@ -25,7 +25,8 @@ app.use(app.router);
 
 app.get('/', routes.index);
 app.get('/users', users.list);
-app.get('/hello', routes.hello);
+//app.get('/hello', routes.hello);
+app.get('/hello/:name', routes.hello);
 
 /// catch 404 and forwarding to error handler
 app.use(function(req, res, next) {

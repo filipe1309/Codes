@@ -4,8 +4,10 @@ exports.index = function(req, res){
 };
 
 exports.hello = function(req, res) {
+	var name = req.params.name;
 	var data = {
-		name: "Filipe Leuch Bonfim",
+		//name: "Filipe Leuch Bonfim",
+		name: name,
 		site: "www.inf.ufpr.br/flb09"
 	}
 
