@@ -1,0 +1,21 @@
+<h3>Editar nova Pessoa</h3>
+<form class="form-horizontal" ng-submit="editar(item)" ng-init="get()">
+	<div class="form-group">
+		<label class="col-sm-2 control-label" for="name">Nome:</label>
+		<div class="col-sm-5">
+			<input type="text" name="name" id="name" ng-model="item.name" required="required" class="form"></input>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-2 control-label" for="version">Versão:</label>
+		<div class="col-sm-5">
+			<input type="text" name="version" id="version" ng-model="item.version" required="required" class="form"></input>
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="btn btn-primary">Salvar</button>
+			<a href="template.html" class="btn btn-default">Voltar</a>
+		</div>
+	</div>		
+</form>

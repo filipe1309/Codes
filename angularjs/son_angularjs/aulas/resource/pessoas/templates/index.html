@@ -1,15 +1,22 @@
 <div ng-init="load()">
 	<h3>Listagem</h3>
+	<a href="#/novo" title="">Novo</a>
+
 	<table class="table">
 		<thead>
 			<th>ID</th>
 			<th>Nome</th>
 			<th>Versão</th>
+			<th>Ação</th>
 		</thead>
 		<tbody>
 			<tr ng-repeat="registro in registros">
 				<td>{{registro.name}}</td>
 				<td>{{registro.version}}</td>
+				<td>
+					<a href="#/editar/{{redistro.id}}" class="btn btn-primary btn-xs">Editar</a>
+					<a href="#/" ng-click="delete(registro.id)"class="btn btn-danger btn-xs">Excluir</a>
+				</td>
 			</tr>
 		</tbody>
 	</table>
