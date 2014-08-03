@@ -1,0 +1,16 @@
+<div ng-init="load()">
+	<h3>Listagem</h3>
+	<table class="table">
+		<thead>
+			<th>ID</th>
+			<th>Nome</th>
+			<th>Versão</th>
+		</thead>
+		<tbody>
+			<tr ng-repeat="registro in registros">
+				<td>{{registro.name}}</td>
+				<td>{{registro.version}}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

@@ -7,7 +7,7 @@ pessoas
 			function($routeProvider) {
 				$routeProvider
 					.when('/', {
-						templateUrl: 'pessoas/templates/index.html'
+						templateUrl: 'index.html'
 					});	
 			} 
 		]

@@ -1,8 +1,11 @@
 pessoas
 	.controller('PessoasCtrl', 
-		['$scope', 
-			function($scope) {
-				$scope.nome= "Filipe";
+		['$scope','PessoasSrv', 
+			function($scope, PessoasSrv) {
+				//$scope.nome= "Filipe";
+				$scope.load = function() {
+					$scope.registros = PessoasSrv.query();
+				};
 			}
 		]
 	);
