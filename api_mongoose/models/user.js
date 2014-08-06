@@ -22,3 +22,37 @@ exports.list = function(req, res) {
 			}
 		});
 };
+
+exports.get = function(req, res) {
+	var id = req.params.id; // Recebe o parametro passado pelo angular
+
+	User
+		.findOne({_id: id})
+		.exec(function(err, users) {
+			if(err) {
+				console.log(err);
+				res.json(err);
+			} else {
+				res.json(users);
+			}
+		});
+};
+
+exports.create = function(req, res) {
+	var data = req.body;
+
+	var dados = {
+		name: data.name,
+		email: data.email,
+		password: data.password
+	};
+
+	var user = new User(dados);
+	user.save(function(err, data) {
+		if(err) {
+			res.json(err);
+		} else {
+			res.json(data);
+		}
+	});
+};
