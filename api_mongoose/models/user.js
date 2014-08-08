@@ -56,3 +56,28 @@ exports.create = function(req, res) {
 		}
 	});
 };
+
+exports.update = function(req, res) {
+	var id = req.params.id;
+	var data = req.body;
+
+	User.update({_id: id}, data,function(err, data) {
+		if(err) {
+			res.json(err);
+		} else {
+			res.json(data);
+		}
+	});
+};
+
+exports.delete = function(req, res) {
+	var id = req.params.id;
+
+	User.remove({_id: id}, function(err, data) {
+		if(err) {
+			res.json(err);
+		} else {
+			res.json(data);
+		}
+	});
+}
