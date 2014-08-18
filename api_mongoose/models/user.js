@@ -24,7 +24,7 @@ exports.list = function(req, res) {
 };
 
 exports.get = function(req, res) {
-	var id = req.params.id; // Recebe o parametro passado pelo angular
+	var id = req.params.id; // Recebe o parametro passado pelo node
 
 	User
 		.findOne({_id: id})
