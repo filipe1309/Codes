@@ -30,6 +30,8 @@ public class MyActivity extends Activity {
         FragmentManager fm = getFragmentManager();
         FragmentTransaction fragmentTransaction = fm.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_place, fr);
+        // adicionado para voltar ao fragmento anterior com back button
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
