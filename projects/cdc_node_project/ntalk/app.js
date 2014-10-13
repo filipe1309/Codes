@@ -7,13 +7,22 @@ var express = require('express'),
 	io = require('socket.io').listen(server);
 //var routes = require('./routes');
 
+const KEY = 'ntalk.sid', SECRET = 'ntalk';
+var cookie =  express.cookieParser(SECRET),
+	store = new express.session.MemoryStore(),
+	sessOpts = {secret: SECRET, key: KEY, store:store},
+	session = express.session(sessOpts);
+
 // view engine setup
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
 // Arquivos de sessão através de cookies =)
-app.use(express.cookieParser('ntalk'));
-app.use(express.session());
+//app.use(express.cookieParser('ntalk'));
+//app.use(express.session());
+
+app.use(cookie);
+app.use(session);
 
 // Cria objetos JSON vindos de um formulário html
 // através dos atributos name e value, nas tags
@@ -36,21 +45,27 @@ app.use(error.serverError);
 //app.get('/', routes.home);
 //app.get('/usuarios', routes.user.index);
 
+io.set('authorization', function (data, accept) {
+	cookie(data, {}, function (err) {
+		var sessionID = data.signedCookies[KEY];
+		store.get(sessionID, function (err, session) {
+			if (err || !session) {
+				accept(null, false);
+			} else {
+				data.session = session;
+				accept(null, true);
+			}
+		})
+	});
+});
+
 load('models')
     .then('controllers')
     .then('routes')
     .into(app);
 
-io.sockets.on('connection', function (client) {
-	client.on('send-server', function (data) {
-		var msg = "<br>" + data.nome + ":<br> " + data.msg + "<br>";
-		// Envia mensagens para o cliente ou servidor
-		client.emit('send-client', msg);
-		// Envia mensagens para todos os clientes, 
-		// exceto o próprio emissor
-		client.broadcast.emit('send-client', msg); 
-	});
-});
+load('sockets')
+	.into(io);
 
 server.listen(3000, function() {
     console.log("Ntalk no ar.");	
