@@ -26,9 +26,11 @@ public class MyActivity extends Activity {
     private BluetoothAdapter mBluetoothAdapter = null;
     private Button bt_find_stop;
     private Button bt_list;
+    private Button bt_disc;
     private Button bt_on;
     private Button bt_off;
     private TextView tv_text;
+    private int DISCOVERABLE_DURATION = 15;
     private ArrayAdapter<String> mArrayAdapter;
     private Set<BluetoothDevice> pairedDevices;
     private ListView listView;
@@ -45,6 +47,7 @@ public class MyActivity extends Activity {
         tv_text = (TextView) findViewById(R.id.tv_text);
         bt_on = (Button) findViewById(R.id.bt_on);
         bt_off = (Button) findViewById(R.id.bt_off);
+        bt_disc = (Button) findViewById(R.id.bt_disc);
         bt_list = (Button) findViewById(R.id.bt_list);
         bt_find_stop = (Button) findViewById(R.id.bt_find_stop);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -55,9 +58,15 @@ public class MyActivity extends Activity {
             bt_list.setEnabled(false);
             bt_on.setEnabled(false);
             bt_off.setEnabled(false);
+            bt_disc.setEnabled(false);
             tv_text.setText("Status: not supported");
             Toast.makeText(this, "Device does not support Bluetooth", Toast.LENGTH_LONG).show();
         } else {
+
+            if(!mBluetoothAdapter.isEnabled()) {
+                disableButtons();
+            }
+
             // Ativar Bluetooth
             bt_on.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -71,6 +80,13 @@ public class MyActivity extends Activity {
                 @Override
                 public void onClick(View view) {
                     bluetooth_off(view);
+                }
+            });
+
+            bt_disc.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    setDeviceVisible();
                 }
             });
 
@@ -95,7 +111,23 @@ public class MyActivity extends Activity {
 
             listView = (ListView) findViewById(R.id.lv_pared_devices);
             listView.setAdapter(mArrayAdapter);
+
+            registerBR();
+
         }
+    }
+
+    public void registerBR() {
+        // registrando o BroadcastReceiver, desregistrar no onDestroy()
+        IntentFilter filter = new IntentFilter();
+        // Para identificar pelo Broadcast Receiver quando um dispositivo por encontrado
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        // Para identificar o final do modo de descoberta
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        // Para decobrir quando saiu/entrou do modo visível
+        filter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+        this.registerReceiver(mReceiver,filter);
+        //registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     }
 
     // Descobrindo dispositivos
@@ -111,23 +143,60 @@ public class MyActivity extends Activity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 mArrayAdapter.add(device.getName() + "\n" + device.getAddress() + "\n" + "finded");
                 mArrayAdapter.notifyDataSetChanged();
+            } else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                if(mBluetoothAdapter.isEnabled())
+                    bt_find_stop.setEnabled(true);
+                bt_find_stop.setText(R.string.find_stop);
+            } else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {
+                if((BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE.equals(
+                        BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) ||
+                        BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE.equals(
+                                BluetoothAdapter.SCAN_MODE_NONE))){
+                    bt_disc.setEnabled(true);
+                    tv_text.setText("Status: end discoverable.");
+                } else {
+                    tv_text.setText("Status: scan mode: PV: "+ BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE + "Actual:"+BluetoothAdapter.EXTRA_SCAN_MODE);
+
+                }
             }
         }
     };
+
+    public void setDeviceVisible() {
+        // Se o Bluetooth não estiver ativo, então ele será
+        // automaticamenta ativado
+        enableButtons();
+        Intent enablaBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        enablaBtIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION,DISCOVERABLE_DURATION);
+        startActivityForResult(enablaBtIntent, REQUEST_ENABLE_BT);
+        bt_disc.setEnabled(false);
+    }
+
+    public void enableButtons() {
+        bt_find_stop.setEnabled(true);
+        bt_list.setEnabled(true);
+        bt_off.setEnabled(true);
+        bt_on.setEnabled(false);
+    }
+
+    public void disableButtons() {
+        bt_find_stop.setEnabled(false);
+        bt_list.setEnabled(false);
+        bt_off.setEnabled(false);
+        bt_on.setEnabled(true);
+        tv_text.setText("Ative o Bluetooth!!!");
+    }
 
     public void find(View v) {
         // Se estiver buscando disposito então para de buscar
         if (mBluetoothAdapter.isEnabled())
             if (mBluetoothAdapter.isDiscovering()) {
-                tv_text.setText("Status: Enable / finding off");
                 mBluetoothAdapter.cancelDiscovery();
             } else { // inicia busca
                 mArrayAdapter.clear();
-                tv_text.setText("Status: Enable / finding on...");
+                bt_find_stop.setEnabled(false);
+                bt_find_stop.setText("Pesquisando...");
                 mBluetoothAdapter.startDiscovery();
-
-                // registrando o BroadcastReceiver, desregistrar no onDestroy()
-                registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
             }
     }
 
@@ -139,6 +208,7 @@ public class MyActivity extends Activity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             Toast.makeText(getApplicationContext(),"Bluetooth turned on",
                     Toast.LENGTH_LONG).show();
+            enableButtons();
         } else {
             Toast.makeText(getApplicationContext(),"Bluetooth is already on",
                     Toast.LENGTH_LONG).show();
@@ -150,6 +220,8 @@ public class MyActivity extends Activity {
         tv_text.setText("Status: Disconnected");
         Toast.makeText(getApplicationContext(),"Bluetooth turned off",
                 Toast.LENGTH_LONG).show();
+        disableButtons();
+        mArrayAdapter.clear();
     }
 
     public void bluetooth_list_pared(View view){

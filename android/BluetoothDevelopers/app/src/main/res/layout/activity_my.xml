@@ -29,6 +29,13 @@
             android:layout_width="wrap_content" />
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/bt_disc"
+        android:text="@string/disc"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
     <Button
         android:id="@+id/bt_list"
         android:text="@string/list"

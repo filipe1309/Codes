@@ -4,11 +4,13 @@
     <string name="app_name">BluetoothDevelopers</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="find_stop">Descobrir: Buscar/Parar</string>
+    <string name="find_stop">Buscar</string>
     <string name="on">Ativar</string>
     <string name="off">Desativar</string>
     <string name="list">Listar pareados</string>
     <string name="text">Status: ----</string>
+    <string name="disc">Tornar visível</string>
+
 
 
 
