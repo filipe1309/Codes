@@ -155,7 +155,24 @@ public class MyActivity extends Activity {
                     bt_disc.setEnabled(true);
                     tv_text.setText("Status: end discoverable.");
                 } else {
-                    tv_text.setText("Status: scan mode: PV: "+ BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE + "Actual:"+BluetoothAdapter.EXTRA_SCAN_MODE);
+                    if(BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE.equals(BluetoothAdapter.SCAN_MODE_NONE))
+                        tv_text.setText("Status: EPSM: SCN");
+                    else if (BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE.equals(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE)){
+                        tv_text.setText("Status: EPSM: CN&D");
+                    } else if (BluetoothAdapter.EXTRA_PREVIOUS_SCAN_MODE.equals(BluetoothAdapter.SCAN_MODE_CONNECTABLE)){
+                        tv_text.setText("Status: EPSM: CN");
+                    }else if(BluetoothAdapter.EXTRA_SCAN_MODE.equals(BluetoothAdapter.SCAN_MODE_NONE))
+                        tv_text.setText(tv_text.getText() +  " / ESM: SCN");
+                    else if (BluetoothAdapter.EXTRA_SCAN_MODE.equals(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE)){
+                        tv_text.setText(tv_text.getText() + " / ESM: CN&D");
+                    } else if (BluetoothAdapter.EXTRA_SCAN_MODE.equals(BluetoothAdapter.SCAN_MODE_CONNECTABLE)){
+                        tv_text.setText(tv_text.getText() + " / ESM: CN");
+                    } else if(BluetoothAdapter.EXTRA_SCAN_MODE.equals(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)) {
+
+                    }
+
+                    tv_text.setText(tv_text.getText() + " / ASMC");
+                    bt_disc.setEnabled(true);
 
                 }
             }
