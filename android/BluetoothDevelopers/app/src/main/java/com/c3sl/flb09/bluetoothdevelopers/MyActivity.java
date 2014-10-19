@@ -14,6 +14,7 @@ import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -44,7 +45,7 @@ public class MyActivity extends Activity {
     private ListView listView;
     // Server
     private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    public Handler mHandler;
+    //public Handler mHandler;
     public Handler aHandler;
 
 
@@ -59,6 +60,33 @@ public class MyActivity extends Activity {
     // É um requestCode(qualquer inteiro > 0 único), que pode ser checado
     // com onActivityResult()
     private static final int REQUEST_ENABLE_BT = 1;
+    public Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            byte[] writeBuf = (byte[]) msg.obj;
+            int begin = (int)msg.arg1;
+            int end = (int)msg.arg2;
+            switch(msg.what) {
+                case 1:
+                    String writeMessage = new String(writeBuf);
+                    writeMessage = writeMessage.substring(begin, end);
+                    break;
+            }
+        }
+        @Override
+        public void close() {
+
+        }
+
+        @Override
+        public void flush() {
+
+        }
+
+        @Override
+        public void publish(LogRecord logRecord) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +100,7 @@ public class MyActivity extends Activity {
         bt_list = (Button) findViewById(R.id.bt_list);
         bt_find_stop = (Button) findViewById(R.id.bt_find_stop);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        aHandler = new Handler() {
+        /*aHandler = new Handler() {
             @Override
             public void close() {
 
@@ -87,7 +115,8 @@ public class MyActivity extends Activity {
             public void publish(LogRecord logRecord) {
 
             }
-        };
+        };*/
+
 
         // Verifica se o aparelho possui Bluetooth
         if(mBluetoothAdapter == null) {
@@ -267,12 +296,34 @@ public class MyActivity extends Activity {
             mArrayAdapter.clear();
             // lopp na lista de aparelhos pareados
             for (BluetoothDevice device: pairedDevices) {
-                // Adiciona o name e o MAC adress em um array adapter para
-                // mostrar em uma ListView
+                // Adiciona o name e o MAC adress em um array adapter para mostrar em uma ListView
                 mArrayAdapter.add(device.getName() + "\n" + device.getAddress() + "\n" + "Pared");
             }
             Toast.makeText(getApplicationContext(),"Show Paired Devices",
                     Toast.LENGTH_SHORT).show();
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    //pairedDevices[i];
+                    int pos = 0;
+                    //Toast.makeText(getApplicationContext(),"Connecting to  "+mArrayAdapter.getItem(i),
+                    //        Toast.LENGTH_SHORT).show();
+                    for (BluetoothDevice device: pairedDevices) {
+                        if(pos == i) {
+                            Toast.makeText(getApplicationContext(), "Connecting to  " + device.getName(),
+                                    Toast.LENGTH_SHORT).show();
+
+                            ConnectThread mConnectThread = new ConnectThread(device);
+                            mConnectThread.start();
+                            break;
+                        }
+                        pos++;
+                    }
+
+                    //mBluetoothAdapter.getRemoteDevice(adress);
+                }
+            });
         } else {
             Toast.makeText(getApplicationContext(),"Paired Devices not found",
                     Toast.LENGTH_SHORT).show();
@@ -357,6 +408,7 @@ public class MyActivity extends Activity {
 
     }
 
+    //Client
     private class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
         private final BluetoothDevice mmDevice;
@@ -392,7 +444,12 @@ public class MyActivity extends Activity {
             }
 
             // Do work to manage the connection (in a separate thread)
-            //manageConnectedSocket(mmSocket);
+            manageConnectedSocket(mmSocket);
+        }
+
+        private void manageConnectedSocket(BluetoothSocket mmSocket) {
+            ConnectedThread mConnectedThread = new ConnectedThread(mmSocket);
+            mConnectedThread.start();
         }
 
         /** Will cancel an in-progress connection, and close the socket */
@@ -445,16 +502,27 @@ public class MyActivity extends Activity {
 
         public void run() {
             byte[] buffer = new byte[1024];  // buffer store for the stream
-            int bytes; // bytes returned from read()
+            int bytes = 0; // bytes returned from read()
+            int begin = 0;
 
             // Keep listening to the InputStream until an exception occurs
             while (true) {
                 try {
                     // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
-                    // Send the obtained bytes to the UI activity
-                    //aHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-                    //        .sendToTarget();
+                    bytes = mmInStream.read(buffer, bytes, buffer.length - bytes);
+                    for (int i = begin; i < bytes; i++) {
+                        if(buffer[i] == "#".getBytes()[0])
+                        // Send the obtained bytes to the UI activity
+                        //mHandler.obtainMessage(1, begin, i, buffer).sendToTarget();
+                        //http://stackoverflow.com/questions/18030942/
+                        // cant-understand-mhandler-obtainmessage-in-android-bluetooth-sample
+                        //aHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
+                        //        .sendToTarget();
+                        begin = i + 1;
+                        if( i == bytes -1) {
+                            bytes = begin = 0;
+                        }
+                    }
                 } catch (IOException e) {
                     break;
                 }
