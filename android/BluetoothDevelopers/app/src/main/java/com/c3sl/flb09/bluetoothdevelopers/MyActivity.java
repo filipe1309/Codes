@@ -14,6 +14,7 @@ import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -46,6 +47,9 @@ public class MyActivity extends Activity {
     private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     public Handler mHandler;
     public Handler aHandler;
+    Handler h;
+    final int RECIEVE_MESSAGE = 1;        // Status  for Handler
+    private StringBuilder sb = new StringBuilder();
 
 
     private String answer;
@@ -88,6 +92,42 @@ public class MyActivity extends Activity {
 
             }
         };
+
+        h = new Handler() {
+        public void handleMessage(android.os.Message msg) {
+            switch (msg.what) {
+            case RECIEVE_MESSAGE: // if receive massage
+                byte[] readBuf = (byte[]) msg.obj;
+                String strIncom = new String(readBuf, 0, msg.arg1); // create string from bytes array
+                sb.append(strIncom); // append string
+                int endOfLineIndex = sb.indexOf("\r\n"); // determine the end-of-line
+                if (endOfLineIndex > 0) { // if end-of-line,
+                    String sbprint = sb.substring(0, endOfLineIndex); // extract string
+                    sb.delete(0, sb.length()); // and clear
+                    //txtArduino.setText("Data from Arduino: " + sbprint); // update TextView
+                    //btnOff.setEnabled(true);
+                    //btnOn.setEnabled(true);
+                }
+                //Log.d(TAG, "...String:"+ sb.toString() +  "Byte:" + msg.arg1 + "...");
+                break;
+            }
+        }
+
+         @Override
+         public void close() {
+
+         }
+
+         @Override
+         public void flush() {
+
+         }
+
+         @Override
+         public void publish(LogRecord logRecord) {
+
+         }
+    };
 
         // Verifica se o aparelho possui Bluetooth
         if(mBluetoothAdapter == null) {
@@ -273,6 +313,7 @@ public class MyActivity extends Activity {
             }
             Toast.makeText(getApplicationContext(),"Show Paired Devices",
                     Toast.LENGTH_SHORT).show();
+
         } else {
             Toast.makeText(getApplicationContext(),"Paired Devices not found",
                     Toast.LENGTH_SHORT).show();
@@ -383,6 +424,7 @@ public class MyActivity extends Activity {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
                 mmSocket.connect();
+                Toast.makeText(getBaseContext(), mmDevice.getName() + " connected", Toast.LENGTH_LONG).show();
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and get out
                 try {
