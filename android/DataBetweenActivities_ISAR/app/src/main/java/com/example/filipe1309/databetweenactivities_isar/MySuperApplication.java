@@ -6,5 +6,5 @@ import android.app.Application;
  * Created by filipe1309 on 21/10/14.
  */
 public class MySuperApplication extends Application{
-    public String SomeSetting = "Dados com classe Application, classe MySuperApplication <--> MainActivity(ou qualquer outra acitvity)";
+    public String SomeSetting = "Dados obtidos através da classe Application, classe MySuperApplication <--> MainActivity(ou qualquer outra acitvity)";
 }

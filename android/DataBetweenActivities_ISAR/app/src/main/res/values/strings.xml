@@ -14,5 +14,7 @@
     <string name="title_activity_tela3">Tela3</string>
     <string name="bt_tela3">Ir para Tela 3 (onActivityResult)</string>
     <string name="tv_saResult">onActivityResult</string>
+    <string name="tv_tela3">Acitivity - Tela 3 -
+        setResult(RESULT_OK, resultIntent);finish();</string>
 
 </resources>
