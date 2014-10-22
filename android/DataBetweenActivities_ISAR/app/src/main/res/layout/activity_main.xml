@@ -22,7 +22,7 @@
             android:id="@+id/tv_data_with_app"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/tv_DataclassApp" />
+            android:text="@string/tv_init" />
 
     </LinearLayout>
 
@@ -68,11 +68,39 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:background="#ff28f198"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_saResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="25dp"
+            android:text="@string/tv_saResult" />
+
+        <TextView
+            android:id="@+id/tv_data_with_saResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tv_init" />
+
+    </LinearLayout>
+
     <Button
         android:id="@+id/bt_tela2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="17dp"
         android:text="@string/bt_text" />
+
+    <Button
+        android:id="@+id/bt_tela3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="17dp"
+        android:text="@string/bt_tela3" />
 
 </LinearLayout>

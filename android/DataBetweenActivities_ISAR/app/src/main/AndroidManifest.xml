@@ -21,6 +21,10 @@
             android:name=".Tela2"
             android:label="@string/title_activity_tela2" >
         </activity>
+        <activity
+            android:name=".Tela3"
+            android:label="@string/title_activity_tela3" >
+        </activity>
     </application>
 
 </manifest>
