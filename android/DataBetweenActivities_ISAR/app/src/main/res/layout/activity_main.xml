@@ -1,0 +1,78 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:background="#ffeaf145"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_class_app"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="25dp"
+            android:text="@string/tv_classApp" />
+
+        <TextView
+            android:id="@+id/tv_data_with_app"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tv_DataclassApp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:background="#5a7cf1"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_int"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="25dp"
+            android:text="@string/tv_intent" />
+
+        <TextView
+            android:id="@+id/tv_data_with_intent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tv_init" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:background="#f16468"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_sig"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="25dp"
+            android:text="@string/tv_sing" />
+
+        <TextView
+            android:id="@+id/tv_data_with_singleton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tv_init" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/bt_tela2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="17dp"
+        android:text="@string/bt_text" />
+
+</LinearLayout>
