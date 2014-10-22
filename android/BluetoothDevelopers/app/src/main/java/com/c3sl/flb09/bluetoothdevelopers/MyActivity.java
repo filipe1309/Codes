@@ -21,8 +21,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
@@ -46,13 +48,11 @@ public class MyActivity extends Activity {
     // Server
     private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     //public Handler mHandler;
-    public Handler aHandler;
     Handler h;
-    final int RECIEVE_MESSAGE = 1;        // Status  for Handler
     private StringBuilder sb = new StringBuilder();
 
 
-    private String answer;
+    // Status  for Handler
     private static final int SUCCESS = 0;
     private static final int FAIL = 1;
     public static final int ANSWER = 2;
@@ -75,6 +75,42 @@ public class MyActivity extends Activity {
                     break;
             }
         }
+        @Override
+        public void close() {
+
+        }
+
+        @Override
+        public void flush() {
+
+        }
+
+        @Override
+        public void publish(LogRecord logRecord) {
+
+        }
+    };
+
+    Handler aHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case ANSWER: // if receive massage
+                    byte[] readBuf = (byte[]) msg.obj;
+                    String strIncom = new String(readBuf, 0, msg.arg1); // create string from bytes array
+                    sb.append(strIncom); // append string
+                    int endOfLineIndex = sb.indexOf("\r\n"); // determine the end-of-line
+                    if (endOfLineIndex > 0) { // if end-of-line,
+                        String sbprint = sb.substring(0, endOfLineIndex); // extract string
+                        sb.delete(0, sb.length()); // and clear
+                        //txtArduino.setText("Data from Arduino: " + sbprint); // update TextView
+                        //btnOff.setEnabled(true);
+                        //btnOn.setEnabled(true);
+                    }
+                    //Log.d(TAG, "...String:"+ sb.toString() +  "Byte:" + msg.arg1 + "...");
+                    break;
+            }
+        }
+
         @Override
         public void close() {
 
@@ -121,41 +157,7 @@ public class MyActivity extends Activity {
         };*/
 
 
-        h = new Handler() {
-        public void handleMessage(android.os.Message msg) {
-            switch (msg.what) {
-            case RECIEVE_MESSAGE: // if receive massage
-                byte[] readBuf = (byte[]) msg.obj;
-                String strIncom = new String(readBuf, 0, msg.arg1); // create string from bytes array
-                sb.append(strIncom); // append string
-                int endOfLineIndex = sb.indexOf("\r\n"); // determine the end-of-line
-                if (endOfLineIndex > 0) { // if end-of-line,
-                    String sbprint = sb.substring(0, endOfLineIndex); // extract string
-                    sb.delete(0, sb.length()); // and clear
-                    //txtArduino.setText("Data from Arduino: " + sbprint); // update TextView
-                    //btnOff.setEnabled(true);
-                    //btnOn.setEnabled(true);
-                }
-                //Log.d(TAG, "...String:"+ sb.toString() +  "Byte:" + msg.arg1 + "...");
-                break;
-            }
-        }
 
-         @Override
-         public void close() {
-
-         }
-
-         @Override
-         public void flush() {
-
-         }
-
-         @Override
-         public void publish(LogRecord logRecord) {
-
-         }
-    };
 
         // Verifica se o aparelho possui Bluetooth
         if(mBluetoothAdapter == null) {
@@ -541,28 +543,19 @@ public class MyActivity extends Activity {
         }
 
         public void run() {
-            byte[] buffer = new byte[1024];  // buffer store for the stream
-            int bytes = 0; // bytes returned from read()
-            int begin = 0;
+            String info = "";
 
-            // Keep listening to the InputStream until an exception occurs
             while (true) {
+                // Read from the InputStream
+                byte buffer[] = new byte[2048];
                 try {
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer, bytes, buffer.length - bytes);
-                    for (int i = begin; i < bytes; i++) {
-                        if(buffer[i] == "#".getBytes()[0])
-                        // Send the obtained bytes to the UI activity
-                        //mHandler.obtainMessage(1, begin, i, buffer).sendToTarget();
-                        //http://stackoverflow.com/questions/18030942/
-                        // cant-understand-mhandler-obtainmessage-in-android-bluetooth-sample
-                        //aHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-                        //        .sendToTarget();
-                        begin = i + 1;
-                        if( i == bytes -1) {
-                            bytes = begin = 0;
-                        }
-                    }
+                    InputStreamReader dinput = new InputStreamReader(mmInStream);
+                    BufferedReader bufferedReader = new BufferedReader( dinput );
+                    info = bufferedReader.readLine();
+                    //aHandler.obtainMessage(1, info )
+                    //        .sendToTarget();
+                    info ="";
+
                 } catch (IOException e) {
                     break;
                 }
