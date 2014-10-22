@@ -20,36 +20,38 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.os.Handler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 
 public class MyActivity extends Activity {
 
-    private BluetoothAdapter mBluetoothAdapter = null;
-    private Button bt_find_stop;
-    private Button bt_list;
-    private Button bt_disc;
-    private Button bt_on;
-    private Button bt_off;
-    private TextView tv_text;
-    private int DISCOVERABLE_DURATION = 15;
-    private ArrayAdapter<String> mArrayAdapter;
-    private Set<BluetoothDevice> pairedDevices;
-    private ListView listView;
+    BluetoothAdapter mBluetoothAdapter = null;
+    Button bt_find_stop;
+    Button bt_list;
+    Button bt_disc;
+    Button bt_on;
+    Button bt_off;
+    TextView tv_text;
+    int DISCOVERABLE_DURATION = 15;
+    ArrayAdapter<String> mArrayAdapter;
+    Set<BluetoothDevice> pairedDevices;
+    ArrayList<BluetoothDevice> devices;
+     ListView listView;
     // Server
-    private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     //public Handler mHandler;
     Handler h;
-    private StringBuilder sb = new StringBuilder();
+    StringBuilder sb = new StringBuilder();
+
 
 
     // Status  for Handler
@@ -63,35 +65,9 @@ public class MyActivity extends Activity {
     // É um requestCode(qualquer inteiro > 0 único), que pode ser checado
     // com onActivityResult()
     private static final int REQUEST_ENABLE_BT = 1;
-    public Handler mHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            byte[] writeBuf = (byte[]) msg.obj;
-            int begin = (int)msg.arg1;
-            int end = (int)msg.arg2;
-            switch(msg.what) {
-                case 1:
-                    String writeMessage = new String(writeBuf);
-                    writeMessage = writeMessage.substring(begin, end);
-                    break;
-            }
-        }
-        @Override
-        public void close() {
+    Handler mHandler;
 
-        }
-
-        @Override
-        public void flush() {
-
-        }
-
-        @Override
-        public void publish(LogRecord logRecord) {
-
-        }
-    };
-
-    Handler aHandler = new Handler() {
+    /*Handler aHandler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case ANSWER: // if receive massage
@@ -110,22 +86,7 @@ public class MyActivity extends Activity {
                     break;
             }
         }
-
-        @Override
-        public void close() {
-
-        }
-
-        @Override
-        public void flush() {
-
-        }
-
-        @Override
-        public void publish(LogRecord logRecord) {
-
-        }
-    };
+    };*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,24 +100,36 @@ public class MyActivity extends Activity {
         bt_list = (Button) findViewById(R.id.bt_list);
         bt_find_stop = (Button) findViewById(R.id.bt_find_stop);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        /*aHandler = new Handler() {
-            @Override
-            public void close() {
+        devices = new ArrayList<BluetoothDevice>();
 
-            }
+        mHandler = new Handler() {
 
-            @Override
-            public void flush() {
-
-            }
 
             @Override
-            public void publish(LogRecord logRecord) {
-
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case SUCCESS:
+                        ConnectedThread mConnectedThread = new ConnectedThread((BluetoothSocket)msg.obj);
+                        //mConnectedThread.start();
+                        Toast.makeText(getBaseContext(),"Device Connected", Toast.LENGTH_LONG).show();
+                        //tv_text.setText("Status: Device Connected");
+                        // Mensagem que será enviada ao dispositivo conectado
+                        String s = "successfully connected";
+                        mConnectedThread.write(s.getBytes());
+                        break;
+                    case ANSWER:
+                        Toast.makeText(getApplicationContext(),"Device Connected, msg: " + (String) msg.obj, Toast.LENGTH_LONG).show();
+                        break;
+                    case FAIL:
+                        Toast.makeText(getApplicationContext(), "Fail: " + (String) msg.obj, Toast.LENGTH_LONG).show();
+                        break;
+                    default:
+                        Toast.makeText(getApplicationContext(),"default: " + (String) msg.obj, Toast.LENGTH_LONG).show();
+                        break;
+                }
             }
-        };*/
-
-
+        };
 
 
         // Verifica se o aparelho possui Bluetooth
@@ -170,7 +143,11 @@ public class MyActivity extends Activity {
             Toast.makeText(this, "Device does not support Bluetooth", Toast.LENGTH_LONG).show();
         } else {
 
-            if(!mBluetoothAdapter.isEnabled()) { disableButtons(); }
+            if(!mBluetoothAdapter.isEnabled()) {
+                disableButtons();
+            } else {
+                bt_on.setEnabled(false);
+            }
 
             // Ativar Bluetooth
             bt_on.setOnClickListener(new View.OnClickListener() {
@@ -231,6 +208,8 @@ public class MyActivity extends Activity {
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         // Para decobrir quando saiu/entrou do modo visível
         filter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+        // Para verificar se o bluetooth foi desativado
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         this.registerReceiver(mReceiver,filter);
         //registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     }
@@ -246,11 +225,37 @@ public class MyActivity extends Activity {
             if(BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // obtem o objeto BluetoothDevice (remoto) do intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                mArrayAdapter.add(device.getName() + "\n" + device.getAddress() + "\n" + "finded");
+                devices.add(device);
+                boolean foundPared = false;
+                // Se encontrar dispositivo já pareado
+                /*for (BluetoothDevice paredDevice: pairedDevices)  {
+                    if(device.getName().equals(paredDevice.getName())){
+                        mArrayAdapter.add(device.getName() + "\n" + device.getAddress() + "\n" +
+                                "(Finded/Pared)");
+                        foundPared = true;
+                        break;
+                    }
+                }
+                if(!foundPared)*/
+                mArrayAdapter.add(device.getName() + "\n" + device.getAddress() + "\n" + "(Finded)");
                 mArrayAdapter.notifyDataSetChanged();
+
+
             } else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                if(mBluetoothAdapter.isEnabled())
+                if(mBluetoothAdapter.isEnabled()) {
+                    /*for (BluetoothDevice paredDevice: pairedDevices)  {
+                        for (int j = 0; j < mArrayAdapter.getCount(); j++)
+                        if(mArrayAdapter.getItem(j).contains(paredDevice.getName().toString())){
+                            mArrayAdapter.getItem(j).concat("(Pared)");
+                            break;
+                        }
+                    }*/
+                    /*for (int i = 0; i < pairedDevices.size(); i++) {
+                        for (int j = 0; j < mArrayAdapter.getCount(); j++)
+                        if(mArrayAdapter.getItem(j).contains(pairedDevices.toArray()))
+                    }*/
                     bt_find_stop.setEnabled(true);
+                }
                 bt_find_stop.setText(R.string.find_stop);
             } else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {
                 // Quando mudar modo visivel
@@ -263,9 +268,19 @@ public class MyActivity extends Activity {
                 } else {
                     bt_disc.setEnabled(true);
                 }
+            } else if(BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                // Se o Bluetooth for desligado, solicitar reativação
+                if(mBluetoothAdapter.getState() == mBluetoothAdapter.STATE_OFF){
+                    turnOnBT();
+                }
             }
         }
     };
+
+    private void turnOnBT() {
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+    }
 
     public void setDeviceVisible() {
         // Se o Bluetooth não estiver ativo, então ele será
@@ -309,8 +324,7 @@ public class MyActivity extends Activity {
         // Verifica se o Bluetooth está ativo
         if(!mBluetoothAdapter.isEnabled()) {
             // Solicita a ativação do Bluetooth
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            turnOnBT();
             Toast.makeText(getApplicationContext(),"Bluetooth turned on",
                     Toast.LENGTH_LONG).show();
             enableButtons();
@@ -346,18 +360,25 @@ public class MyActivity extends Activity {
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                    if (mBluetoothAdapter.isDiscovering())
+                        mBluetoothAdapter.cancelDiscovery();
+
                     //pairedDevices[i];
                     int pos = 0;
                     //Toast.makeText(getApplicationContext(),"Connecting to  "+mArrayAdapter.getItem(i),
                     //        Toast.LENGTH_SHORT).show();
                     for (BluetoothDevice device: pairedDevices) {
                         if(pos == i) {
-                            Toast.makeText(getApplicationContext(), "Connecting to  " + device.getName(),
-                                    Toast.LENGTH_SHORT).show();
+                            //if (mArrayAdapter.getItem(i).contains("(Finded)(Pared)")) {
+                                Toast.makeText(getApplicationContext(), "Connecting with  " + device.getName(),
+                                        Toast.LENGTH_SHORT).show();
 
-                            ConnectThread mConnectThread = new ConnectThread(device);
-                            mConnectThread.start();
-                            break;
+                                ConnectThread mConnectThread = new ConnectThread(device);
+                                mConnectThread.start();
+                            tv_text.setText("Status: Connecting with "+ device.getName());
+                            break; // Depois que encontrar pode sair do for
+                            //}
                         }
                         pos++;
                     }
@@ -394,6 +415,11 @@ public class MyActivity extends Activity {
         unregisterReceiver(mReceiver);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mReceiver);
+    }
 
     // Server
     private class AcceptThread extends Thread {
@@ -476,9 +502,11 @@ public class MyActivity extends Activity {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
                 mmSocket.connect();
-                Toast.makeText(getBaseContext(), mmDevice.getName() + " connected", Toast.LENGTH_LONG).show();
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and get out
+
+                //tv_text.setText("Status: Connection Error: " + connectException.toString());
+                //Toast.makeText(getBaseContext()," Error to connect with " + mmDevice.getName(), Toast.LENGTH_LONG).show();
                 try {
                     mmSocket.close();
                 } catch (IOException closeException) { }
@@ -486,13 +514,12 @@ public class MyActivity extends Activity {
             }
 
             // Do work to manage the connection (in a separate thread)
-            manageConnectedSocket(mmSocket);
+            //manageConnectedSocket(mmSocket);
+
+            // Handler para comunicação da thread com a MainActivity (a thread principal)
+            mHandler.obtainMessage(SUCCESS, mmSocket).sendToTarget();
         }
 
-        private void manageConnectedSocket(BluetoothSocket mmSocket) {
-            ConnectedThread mConnectedThread = new ConnectedThread(mmSocket);
-            mConnectedThread.start();
-        }
 
         /** Will cancel an in-progress connection, and close the socket */
         public void cancel() {
@@ -536,7 +563,9 @@ public class MyActivity extends Activity {
             try {
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
-            } catch (IOException e) { }
+            } catch (IOException e) {
+                mHandler.obtainMessage(FAIL,"cted"+ e.getMessage()).sendToTarget();
+            }
 
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
@@ -552,6 +581,7 @@ public class MyActivity extends Activity {
                     InputStreamReader dinput = new InputStreamReader(mmInStream);
                     BufferedReader bufferedReader = new BufferedReader( dinput );
                     info = bufferedReader.readLine();
+                    mHandler.obtainMessage(ANSWER, info).sendToTarget();
                     //aHandler.obtainMessage(1, info )
                     //        .sendToTarget();
                     info ="";
