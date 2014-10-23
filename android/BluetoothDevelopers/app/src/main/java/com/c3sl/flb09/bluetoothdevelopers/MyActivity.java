@@ -361,6 +361,8 @@ public class MyActivity extends Activity {
                             mConnectThread.start();
                             mAcceptThread = new AcceptThread();
                             mAcceptThread.start();
+                            if(isConnected() == CONNECTED)
+                                tv_text.setText("Status: Connected with "+ device.getName());
                             break; // Depois que encontrar pode sair do for
                             //}
                         }
