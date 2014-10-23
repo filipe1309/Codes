@@ -35,11 +35,13 @@ import java.util.UUID;
 public class MyActivity extends Activity {
 
     BluetoothAdapter mBluetoothAdapter = null;
+    ConnectedThread mConnectedThread;
     Button bt_find_stop;
     Button bt_list;
     Button bt_disc;
     Button bt_on;
     Button bt_off;
+    Button bt_data;
     TextView tv_text;
     int DISCOVERABLE_DURATION = 15;
     ArrayAdapter<String> mArrayAdapter;
@@ -62,13 +64,63 @@ public class MyActivity extends Activity {
     // É um requestCode(qualquer inteiro > 0 único), que pode ser checado
     // com onActivityResult()
     private static final int REQUEST_ENABLE_BT = 1;
-    Handler mHandler;
+    Handler   mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case SUCCESS:
+                    tv_text.setText("Status: Device connected");
+                    mConnectedThread = new ConnectedThread((BluetoothSocket)msg.obj);
+                    mConnectedThread.start();
+                    Toast.makeText(getBaseContext(),"Device Connected", Toast.LENGTH_LONG).show();
+                    //tv_text.setText("Status: Device Connected");
+                    // Mensagem que será enviada ao dispositivo conectado
+                    setSendMessage(mConnectedThread);
+                    bt_data.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            String s = "successfully connected - create";
+                            mConnectedThread.write(s.getBytes());
+                            Toast.makeText(getBaseContext(),"MSG Enviada", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    break;
+                case ANSWER:
+                    byte[] readBuf = (byte[])msg.obj;
+                    String string = new String(readBuf);
+                    Toast.makeText(getApplicationContext(), "MSG Recebida: "+string, Toast.LENGTH_LONG).show();
+                    //tv_text.setText("Status: Device connected - Message received");
+                    //Toast.makeText(getApplicationContext(),"Device Connected, msg: " + (String) msg.obj, Toast.LENGTH_LONG).show();
+                    tv_text.setText("Status: Device connected - msg: "+ (String) msg.obj);
+                    break;
+                case FAIL:
+                    Toast.makeText(getApplicationContext(), "Fail: " + (String) msg.obj, Toast.LENGTH_LONG).show();
+                    break;
+                default:
+                    Toast.makeText(getApplicationContext(),"default: " + (String) msg.obj, Toast.LENGTH_LONG).show();
+                    break;
+            }
+        }
+    };
+
+
 
     public int isConnected() {
         return isConnected;
     }
     public void setConnected(int isConnected) {
+
         this.isConnected = isConnected;
+    }
+
+    public void setSendMessage(ConnectedThread mConnectedThread) {
+        bt_data = (Button) findViewById(R.id.bt_send_data);
+        bt_data.setVisibility(View.VISIBLE);
+
+        listView.setVisibility(View.INVISIBLE);
+        String s = "successfully connected - sets";
+        mConnectedThread.write(s.getBytes());
     }
 
     @Override
@@ -84,34 +136,6 @@ public class MyActivity extends Activity {
         bt_find_stop = (Button) findViewById(R.id.bt_find_stop);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         devices = new ArrayList<BluetoothDevice>();
-
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case SUCCESS:
-                        ConnectedThread mConnectedThread = new ConnectedThread((BluetoothSocket)msg.obj);
-                        //mConnectedThread.start();
-                        Toast.makeText(getBaseContext(),"Device Connected", Toast.LENGTH_LONG).show();
-                        //tv_text.setText("Status: Device Connected");
-                        // Mensagem que será enviada ao dispositivo conectado
-                        String s = "successfully connected";
-                        mConnectedThread.write(s.getBytes());
-                        break;
-                    case ANSWER:
-                        Toast.makeText(getApplicationContext(),"Device Connected, msg: " + (String) msg.obj, Toast.LENGTH_LONG).show();
-                        break;
-                    case FAIL:
-                        Toast.makeText(getApplicationContext(), "Fail: " + (String) msg.obj, Toast.LENGTH_LONG).show();
-                        break;
-                    default:
-                        Toast.makeText(getApplicationContext(),"default: " + (String) msg.obj, Toast.LENGTH_LONG).show();
-                        break;
-                }
-            }
-        };
-
 
         // Verifica se o aparelho possui Bluetooth
         if(mBluetoothAdapter == null) {
@@ -129,6 +153,9 @@ public class MyActivity extends Activity {
             } else {
                 bt_on.setEnabled(false);
             }
+
+            mAcceptThread = new AcceptThread();
+            mAcceptThread.start();
 
             // Ativar Bluetooth
             bt_on.setOnClickListener(new View.OnClickListener() {
@@ -169,6 +196,7 @@ public class MyActivity extends Activity {
                 }
             });
 
+
             // Array para dispositivos pareados e descobertos
             mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
 
@@ -176,7 +204,6 @@ public class MyActivity extends Activity {
             listView.setAdapter(mArrayAdapter);
 
             registerBR();
-
         }
     }
 
@@ -359,8 +386,6 @@ public class MyActivity extends Activity {
                             setConnected(CONNECTING);
                             mConnectThread = new ConnectThread(device);
                             mConnectThread.start();
-                            mAcceptThread = new AcceptThread();
-                            mAcceptThread.start();
                             if(isConnected() == CONNECTED)
                                 tv_text.setText("Status: Connected with "+ device.getName());
                             break; // Depois que encontrar pode sair do for
@@ -565,17 +590,21 @@ public class MyActivity extends Activity {
         }
 
         public void run() {
-            String info = "";
+            //String info = "";
+            int bytes;
             setConnected(CONNECTED);
             while (true) {
                 // Read from the InputStream
                 byte buffer[] = new byte[2048];
                 try {
-                    InputStreamReader dinput = new InputStreamReader(mmInStream);
-                    BufferedReader bufferedReader = new BufferedReader( dinput );
-                    info = bufferedReader.readLine();
-                    mHandler.obtainMessage(ANSWER, info).sendToTarget();
-                    info ="";
+                    bytes = mmInStream.read(buffer);
+                    mHandler.obtainMessage(ANSWER, bytes, -1, buffer)
+                            .sendToTarget();
+                    //InputStreamReader dinput = new InputStreamReader(mmInStream);
+                    //BufferedReader bufferedReader = new BufferedReader( dinput );
+                    //info = bufferedReader.readLine();
+                    //mHandler.obtainMessage(ANSWER, info).sendToTarget();
+                    //info ="";
 
                 } catch (IOException e) {
                     break;
@@ -587,7 +616,9 @@ public class MyActivity extends Activity {
         public void write(byte[] bytes) {
             try {
                 mmOutStream.write(bytes);
-            } catch (IOException e) { }
+            } catch (IOException e) {
+                mHandler.obtainMessage(FAIL,"w.cted"+ e.getMessage()).sendToTarget();
+            }
         }
 
         /* Call this from the main activity to shutdown the connection */
