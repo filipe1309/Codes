@@ -48,12 +48,9 @@ public class MyActivity extends Activity {
      ListView listView;
     // Server
     public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    //public Handler mHandler;
-    Handler h;
-    StringBuilder sb = new StringBuilder();
-
-
-
+    ConnectThread mConnectThread;
+    AcceptThread mAcceptThread;
+    private int isConnected;
     // Status  for Handler
     private static final int SUCCESS = 0;
     private static final int FAIL = 1;
@@ -67,26 +64,12 @@ public class MyActivity extends Activity {
     private static final int REQUEST_ENABLE_BT = 1;
     Handler mHandler;
 
-    /*Handler aHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case ANSWER: // if receive massage
-                    byte[] readBuf = (byte[]) msg.obj;
-                    String strIncom = new String(readBuf, 0, msg.arg1); // create string from bytes array
-                    sb.append(strIncom); // append string
-                    int endOfLineIndex = sb.indexOf("\r\n"); // determine the end-of-line
-                    if (endOfLineIndex > 0) { // if end-of-line,
-                        String sbprint = sb.substring(0, endOfLineIndex); // extract string
-                        sb.delete(0, sb.length()); // and clear
-                        //txtArduino.setText("Data from Arduino: " + sbprint); // update TextView
-                        //btnOff.setEnabled(true);
-                        //btnOn.setEnabled(true);
-                    }
-                    //Log.d(TAG, "...String:"+ sb.toString() +  "Byte:" + msg.arg1 + "...");
-                    break;
-            }
-        }
-    };*/
+    public int isConnected() {
+        return isConnected;
+    }
+    public void setConnected(int isConnected) {
+        this.isConnected = isConnected;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,8 +86,6 @@ public class MyActivity extends Activity {
         devices = new ArrayList<BluetoothDevice>();
 
         mHandler = new Handler() {
-
-
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
@@ -374,9 +355,12 @@ public class MyActivity extends Activity {
                                 Toast.makeText(getApplicationContext(), "Connecting with  " + device.getName(),
                                         Toast.LENGTH_SHORT).show();
 
-                                ConnectThread mConnectThread = new ConnectThread(device);
-                                mConnectThread.start();
                             tv_text.setText("Status: Connecting with "+ device.getName());
+                            setConnected(CONNECTING);
+                            mConnectThread = new ConnectThread(device);
+                            mConnectThread.start();
+                            mAcceptThread = new AcceptThread();
+                            mAcceptThread.start();
                             break; // Depois que encontrar pode sair do for
                             //}
                         }
@@ -468,6 +452,7 @@ public class MyActivity extends Activity {
 
         /** Will cancel the listening socket, and cause the thread to finish */
         public void cancel() {
+            setConnected(DISCONNECTED);
             try {
                 mmServerSocket.close();
             } catch (IOException e) { }
@@ -490,7 +475,10 @@ public class MyActivity extends Activity {
             try {
                 // MY_UUID is the app's UUID string, also used by the server code
                 tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
-            } catch (IOException e) { }
+            } catch (IOException e) {
+                mHandler.obtainMessage(FAIL, "ct" + e.getMessage()).sendToTarget();
+                setConnected(DISCONNECTED);
+            }
             mmSocket = tmp;
         }
 
@@ -504,12 +492,15 @@ public class MyActivity extends Activity {
                 mmSocket.connect();
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and get out
-
+                mHandler.obtainMessage(FAIL, "ct.run: "+ mmDevice.getName() + " "  + connectException.getMessage()).sendToTarget();
                 //tv_text.setText("Status: Connection Error: " + connectException.toString());
                 //Toast.makeText(getBaseContext()," Error to connect with " + mmDevice.getName(), Toast.LENGTH_LONG).show();
                 try {
                     mmSocket.close();
-                } catch (IOException closeException) { }
+                } catch (IOException closeException) {
+                    mHandler.obtainMessage(FAIL, closeException.getMessage()).sendToTarget();
+                    setConnected(DISCONNECTED);
+                }
                 return;
             }
 
@@ -573,7 +564,7 @@ public class MyActivity extends Activity {
 
         public void run() {
             String info = "";
-
+            setConnected(CONNECTED);
             while (true) {
                 // Read from the InputStream
                 byte buffer[] = new byte[2048];
@@ -582,8 +573,6 @@ public class MyActivity extends Activity {
                     BufferedReader bufferedReader = new BufferedReader( dinput );
                     info = bufferedReader.readLine();
                     mHandler.obtainMessage(ANSWER, info).sendToTarget();
-                    //aHandler.obtainMessage(1, info )
-                    //        .sendToTarget();
                     info ="";
 
                 } catch (IOException e) {
