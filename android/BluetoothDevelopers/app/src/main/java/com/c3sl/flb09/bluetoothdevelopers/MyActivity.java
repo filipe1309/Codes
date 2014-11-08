@@ -148,20 +148,19 @@ public class MyActivity extends Activity {
             Toast.makeText(this, "Device does not support Bluetooth", Toast.LENGTH_LONG).show();
         } else {
 
-            if(!mBluetoothAdapter.isEnabled()) {
-                disableButtons();
-            } else {
+            if(mBluetoothAdapter.isEnabled()) {
                 bt_on.setEnabled(false);
+            } else {
+                disableButtons();
+                bluetooth_on();
             }
 
-            mAcceptThread = new AcceptThread();
-            mAcceptThread.start();
 
             // Ativar Bluetooth
             bt_on.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    bluetooth_on(view);
+                    bluetooth_on();
                 }
             });
 
@@ -280,6 +279,9 @@ public class MyActivity extends Activity {
                 // Se o Bluetooth for desligado, solicitar reativação
                 if(mBluetoothAdapter.getState() == mBluetoothAdapter.STATE_OFF){
                     turnOnBT();
+                } else if(mBluetoothAdapter.getState() == mBluetoothAdapter.STATE_ON) {
+                    mAcceptThread = new AcceptThread();
+                    mAcceptThread.start();
                 }
             }
         }
@@ -288,6 +290,7 @@ public class MyActivity extends Activity {
     private void turnOnBT() {
         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        enableButtons();
     }
 
     public void setDeviceVisible() {
@@ -328,7 +331,7 @@ public class MyActivity extends Activity {
             }
     }
 
-    public void bluetooth_on(View view) {
+    public void bluetooth_on() {
         // Verifica se o Bluetooth está ativo
         if(!mBluetoothAdapter.isEnabled()) {
             // Solicita a ativação do Bluetooth
@@ -426,11 +429,11 @@ public class MyActivity extends Activity {
         unregisterReceiver(mReceiver);
     }
 
-    @Override
+    /*@Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mReceiver);
-    }
+    }*/
 
     // Server
     private class AcceptThread extends Thread {
