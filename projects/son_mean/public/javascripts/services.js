@@ -3,15 +3,17 @@ angular.module('sonApp.services', ['ngResource']) // ngResource - para requisiõ
 	.factory('UsersSrv', ['$resource', 
 		function($resource) {
 
-			return $resource('api/users/:id', 
+			return $resource('/api/users/:id', 
 				//paramDefaults
 				{
 					id: '@id'
-				}
-				,
+				},
 				//actions 
 				{
-
+					update: {
+						method: "PUT",
+						url: "/api/users/:id"
+					}
 				}
 			);
 		}

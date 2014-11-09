@@ -7,7 +7,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var routes = require('./routes');
-var users = require('./routes/user');
+var user = require('./routes/user');
 
 var app = express();
 
@@ -26,7 +26,7 @@ app.use(app.router);
 app.get('/partials/:name', routes.partials);
 app.get('/angular/:dir/:name', routes.angular);
 app.get('/', routes.index);
-app.get('/users', users.list);
+//app.get('/users', users.list);
 //app.get('/hello', routes.hello);
 app.get('/hello/:name', routes.hello);
 
