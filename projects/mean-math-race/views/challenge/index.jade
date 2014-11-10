@@ -1,0 +1,9 @@
+h1 Math Challenge!
+
+form(action="", method="post", ng-init="get()", ng-show="!valid")
+	label Nome:  
+	input(type="text", name="name",value="{{item.name}}", ng-model="item.name")
+	button(ng-click="verifyName(item)") Entrar
+
+div(ng-show="valid")
+	Foi
