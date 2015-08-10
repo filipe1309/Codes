@@ -1,0 +1,8 @@
+.parallax-container {
+    height: 300px;
+}
+
+#modalAula {
+    max-height: 100%;
+    overflow: visible;
+}

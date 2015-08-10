@@ -1,0 +1,96 @@
+ <!DOCTYPE html>
+  <html>
+    <head>
+	<!--Import materialize.css-->
+	<link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+
+	<!--Let browser know website is optimized for mobile-->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<meta charset="utf-8"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    </head>
+
+    <body>
+	<ul id='dropdown1' class='dropdown-content'>
+	    <li><a href="#!">First</a></li>
+		<li><a href="#!">Second</a></li>
+		<li class="divider"></li>
+		<li><a href="#!">Third</a></li>
+		<li><a href="#!">Fourth</a></li>
+	</ul>
+
+	<nav class="blue darken-2">
+		<div class="nav-wrapper">
+			<a href="#!" class="brand-logo">MaterializeCSS</a>
+			<a href="#" data-activates="mobile-menu" class="button-collapse"><i class="mdi-navigation-menu"></i></a>
+			<!-- Menu barra superior -->
+            <ul class="right hide-on-med-and-down">
+				<li><a href="sass.html">Home <i class="material-icons left">android</i></a></li>
+				<li><a href="badges.html">Sobre</a></li>
+				<li><a href="collapsible.html">Serviços</a></li>
+				<li><a href="mobile.html">Contato</a></li>
+				<li><a class="dropdown-button" href="#!" data-activates="dropdown1">Dropdown<i class="mdi-navigation-arrow-drop-down right"></i></a></li>
+			</ul>
+
+            <!-- Menu mobile -->
+			<ul class="side-nav" id="mobile-menu">
+			    <li><a href="sass.html">Home</a></li>
+				<li><a href="badges.html">Sobre</a></li>
+				<li><a href="collapsible.html">Serviços</a></li>
+				<li><a href="mobile.html">Contato</a></li>
+			</ul>
+		</div>
+	</nav>
+
+	Teste MaterializeCSS
+
+    <div class="slider fullscreen">
+        <ul class="slides">
+            <li>
+                <img src="http://lorempixel.com/500/250/nature/1" alt="" />
+                <div class="caption center-align">
+                    <h1 class="red-text text-darken-2">Primeiro Título</h1>
+                    <h4 class="red-text">Primeira Descrição</h4>
+                </div>
+            </li>
+            <li>
+                <img src="http://lorempixel.com/500/250/nature/2" alt="" />
+                <div class="caption left-align">
+                    <h3>Segundo Título</h3>
+                    <h5 class="white-text">Primeira Descrição</h5>
+                    <h6>Teste</h6>
+                    <h6>Teste</h6>
+                    <h6>Teste</h6>
+                    <h6>Teste</h6>
+                </div>
+            </li>
+            <li>
+                <img src="http://lorempixel.com/500/250/nature/3" alt="" />
+                <div class="caption right-align">
+                    <h1>Terceiro Título</h1>
+                    <h4 class="white-text">Primeira Descrição</h4>
+                </div>
+            </li>
+            <li>
+                <img src="http://lorempixel.com/500/250/nature/4" alt="" />
+                <div class="caption right-align">
+                    <h1>Quarto Título</h1>
+                    <h4 class="white-text">Primeira Descrição</h4>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!--Import jQuery before materialize.js-->
+	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="js/materialize.min.js"></script>
+	<script type="text/javascript">
+		$( document ).ready(function() {
+			$(".button-collapse").sideNav();
+			$(".dropdown-button").dropdown();
+            $('.slider').slider({full_width:true});
+		});
+	</script>
+
+    </body>
+  </html>
