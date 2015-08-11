@@ -2,7 +2,7 @@
 <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-        <title>WS PHP - Modelo de Agregação</title>
+        <title>WS PHP - Modelo de Composição</title>
     </head>
     <body>
         <?php
