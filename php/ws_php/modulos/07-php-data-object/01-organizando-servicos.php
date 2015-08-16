@@ -16,8 +16,9 @@
         echo '<pre>';
         
         $conn = new Conn;
+        $conn->getConn();
         
-        var_dump($conn);
+        var_dump($conn->getConn());
         ?>
 
     </body>
