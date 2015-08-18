@@ -2,7 +2,7 @@
 <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-        <title>WS PHP - Personalizando Erros</title>
+        <title>WS PHP - Organizando Serviços</title>
         <link rel="stylesheet" href="css/reset.css"/>
     </head>
     <body>
