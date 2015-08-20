@@ -33,8 +33,8 @@ class Create extends Conn {
     }
     
     /**
-     * 
-     * @return INT = Retorna false, ou o último ID inserido na tabela caso o cadastro seja executado com sucesso.
+     * <b>Obter resultado:</b> Reorna o ID do registro inserido ou false caso nenhum registro seja inserido!
+     * @return INT = Retorna false, ou o último ID inserido na tabela (lasInsertId)
      */
     function getResult() {
         return $this->result;
@@ -49,7 +49,7 @@ class Create extends Conn {
     
     
     /**
-     * Efetua a conexão com o banco de dados, e
+     * Efetua a conexão com o banco de dados, obtendo o PDO, e
      * executa o método prepare do PDO, para realização dos binds
      */
     private function connect() {
@@ -58,7 +58,7 @@ class Create extends Conn {
     }
     
     /**
-     * Monta a Query a partir do array (dados) informado
+     * Monta a Query a partir do array (dados) informado, criando a sintaxe da query para o Prepared Statements
      */
     private function getSyntax() {
         $fields = implode(', ', array_keys($this->dados));
