@@ -2,7 +2,7 @@
 <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-        <title>WS PHP - Generic Crud :: Create</title>
+        <title>WS PHP - Generic Crud :: Update</title>
         <link rel="stylesheet" href="css/reset.css"/>
     </head>
     <body>
