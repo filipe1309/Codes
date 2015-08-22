@@ -15,9 +15,24 @@
         error_reporting(E_ALL);
         echo '<pre>';
         
-        $check = new Check;
-        var_dump($check);
+//        $check = new Check;
+//        var_dump($check);
        
+        $email = 'filipe@teste.com';
+        if (Check::email($email)):
+            echo 'Válido!<hr>';
+        else:
+            echo 'Inválido!<hr>';
+        endif;
+        
+        $name = 'Estamos aprendendo PHP. Veja você como é!';
+        echo Check::name($name) . '<hr>';
+        
+        $data = '05/01/2014 13:14:20';
+        $data = '05/01/2014';
+        echo Check::data($data) . '<hr>';
+        
+        
         ?>
 
     </body>
