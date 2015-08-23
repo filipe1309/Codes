@@ -32,6 +32,17 @@
         $data = '05/01/2014';
         echo Check::data($data) . '<hr>';
         
+        $string = 'Olá mundo, estamos estudando PHP na UPINSIDE!';
+        echo Check::words($string, 4, '<small>continue lendo...</small><hr>');
+        
+        echo Check::catByname('artigos') . '<hr>';
+        echo Check::catByname('esportes') . '<hr>';
+//        echo Check::catByname('internet') . '<hr>';
+        
+        echo Check::userOnline() . '<hr>';
+        
+//        echo Check::image('google.jpg', 'Google');
+        echo Check::image('google.jpg', 'Google', 300, 180);
         
         ?>
 

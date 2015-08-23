@@ -1,4 +1,5 @@
 <?php
+define('HOME', 'http://localhost:8080/modulos/08-classes-auxiliares');
 
 // CONFIGURAÇÕES DO SITE ####################
 define('HOST', 'localhost'); // runtime, se fosse cont seria compile time
