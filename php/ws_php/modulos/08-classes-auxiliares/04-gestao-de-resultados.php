@@ -17,7 +17,7 @@
         
         /** Verifica se o GET tem um parametro inteiro chamado "atual" */
         $atual = filter_input(INPUT_GET, "atual", FILTER_VALIDATE_INT);
-        $pager = new Pager('04-gestao-de-resultados.php?atual=', 'Primeira', 'Última');
+        $pager = new Pager('04-gestao-de-resultados.php?atual=', 'Primeira', 'Última','1');
         $pager->exePager($atual, 1);
         
         $read = new Read;
@@ -30,7 +30,10 @@
             var_dump($read->getResult());
         endif;
         
-        //var_dump($pager, $read->getResult());
+        $pager->exePaginator('ws_categories');
+        
+        echo $pager->getPaginator();
+//        var_dump($pager);
         
         ?>
 
