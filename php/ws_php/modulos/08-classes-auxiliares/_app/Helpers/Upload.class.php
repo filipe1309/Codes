@@ -39,6 +39,7 @@ class Upload {
 
         $this->checkFolder($this->folder);
         $this->setFileName();
+        $this->uploadImage();
     }
 
     function getResult() {
@@ -72,8 +73,66 @@ class Upload {
         if (file_exists(self::$baseDir . $this->send . $fileName)):
             $fileName = Check::name($this->name) . '-' . time() . strrchr($this->file['name'], '.');
         endif;
-        
+
         $this->name = $fileName;
+    }
+
+    // Realiza o upload de imagens redimensionando a mesma
+    private function uploadImage() {
+
+
+        switch ($this->file['type']):
+            case 'image/jpg':
+            case 'image/jpeg':
+            case 'image/pjpeg':
+                $this->image = imagecreatefromjpeg($this->file['tmp_name']);
+                break;
+            case 'image/png':
+            case 'image/x-png':
+                $this->image = imagecreatefrompng($this->file['tmp_name']);
+                break;
+        endswitch;
+
+        if (!$this->image):
+            $this->result = false;
+            $this->error = 'Tipo de arquivo inválido, envie imagens JPG ou PNG!';
+        else:
+            $x = imagesx($this->image);
+            $y = imagesy($this->image);
+            $imageW = ($this->width < $x ? $this->width : $x);
+            $imageH = ($imageW * $y) / $x;
+
+            $newImage = imagecreatetruecolor($imageW, $imageH);
+            /** Salva imagem com fundo transparente */
+            imagealphablending($newImage, false);
+            imagesavealpha($newImage, true);
+            /** Envia copia da imagem para o servidor */
+            imagecopyresampled($newImage, $this->image, 0, 0, 0, 0, $imageW, $imageH, $x, $y);
+
+            switch ($this->file['type']):
+                case 'image/jpg':
+                case 'image/jpeg':
+                case 'image/pjpeg':
+                    imagejpeg($newImage, self::$baseDir . $this->send . $this->name);
+                    break;
+                case 'image/png':
+                case 'image/x-png':
+                    imagepng($newImage, self::$baseDir . $this->send . $this->name);
+                    break;
+            endswitch;
+
+            if (!$newImage):
+                $this->result = false;
+                $this->error = 'Tipo de arquivo inválido, envie imagens JPG ou PNG!';
+            else:
+                $this->result = $this->send . $this->name;
+                $this->error = null;
+            endif;
+            
+            imagedestroy($this->image);
+            imagedestroy($newImage);
+
+        endif;
     }
 
 }

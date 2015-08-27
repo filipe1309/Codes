@@ -22,7 +22,14 @@
             $imagem = $_FILES['imagem'];
 
             $upload->image($imagem);
-             var_dump($upload);
+            if (!$upload->getResult()):
+                wsErro("Erro ao enviar imagem:<br><small>{$upload->getError()}</small>", WS_ERROR);
+            else:
+                wsErro("Imagem enviada com sucesso<br><small>{$upload->getResult()}</small>", WS_ACCEPT);
+            endif;
+
+            echo '<hr>';
+            var_dump($upload);
 
 
         endif;
