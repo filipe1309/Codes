@@ -42,6 +42,56 @@ class Upload {
         $this->uploadImage();
     }
 
+    public function file(array $file, $name = null, $folder = null, $maxFileSize = null) {
+        $this->file = $file;
+        $this->name = ((string) $name ? $name : substr($file['name'], 0, strrpos($file['name'], '.')) );
+        $this->folder = ((string) $folder ? $folder : 'files');
+        $maxFileSize = ( (int) $maxFileSize ? $maxFileSize : 2 );
+
+        $fileAccept = [
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/pdf"
+        ];
+
+        if ($this->file['size'] > ($maxFileSize * (1024 * 1024))):
+            $this->result = false;
+            $this->error = "Arquivo muito grande, tamanho máximo permitido de {$maxFileSize}mb";
+
+        elseif (!in_array($this->file['type'], $fileAccept)):
+            $this->result = false;
+            $this->error = 'Tipo de arquivo não suportado. Envie .PDF ou .DOCX!';
+        else:
+            $this->checkFolder($this->folder);
+            $this->setFileName();
+            $this->moveFile();
+        endif;
+    }
+
+    public function media(array $media, $name = null, $folder = null, $maxFileSize = null) {
+        $this->file = $media;
+        $this->name = ((string) $name ? $name : substr($media['name'], 0, strrpos($media['name'], '.')) );
+        $this->folder = ((string) $folder ? $folder : 'medias');
+        $maxFileSize = ( (int) $maxFileSize ? $maxFileSize : 40 );
+
+        $fileAccept = [
+            "audio/mp3",
+            "video/mp4"
+        ];
+
+        if ($this->file['size'] > ($maxFileSize * (1024 * 1024))):
+            $this->result = false;
+            $this->error = "Arquivo muito grande, tamanho máximo permitido de {$maxFileSize}mb";
+
+        elseif (!in_array($this->file['type'], $fileAccept)):
+            $this->result = false;
+            $this->error = 'Tipo de arquivo não suportado. Envie audio MP3 ou video MP4!';
+        else:
+            $this->checkFolder($this->folder);
+            $this->setFileName();
+            $this->moveFile();
+        endif;
+    }
+
     function getResult() {
         return $this->result;
     }
@@ -128,10 +178,21 @@ class Upload {
                 $this->result = $this->send . $this->name;
                 $this->error = null;
             endif;
-            
+
             imagedestroy($this->image);
             imagedestroy($newImage);
 
+        endif;
+    }
+
+    // ENVIA ARQUIVOS E MIDIAS
+    private function moveFile() {
+        if (move_uploaded_file($this->file['tmp_name'], self::$baseDir . $this->send . $this->name)):
+            $this->result = $this->send . $this->name;
+            $this->error = NULL;
+        else:
+            $this->result = false;
+            $this->error = 'Erro ao mover o arquivo. Favor tente mais tarde!';
         endif;
     }
 
