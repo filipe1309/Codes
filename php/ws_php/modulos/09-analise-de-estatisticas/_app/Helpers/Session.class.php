@@ -3,6 +3,7 @@
 /**
  * Session.class [ HELPER ]
  * Responsável pela estatísticas, sessões e atualizações de tráfego do sistema;
+ * 
  * @copyright (c) 2015, Filipe Leuch Bonfim UPINSIDE
  */
 class Session {
@@ -26,15 +27,25 @@ class Session {
         if (empty($_SESSION['useronline'])):
             $this->setTraffic();
             $this->setSession();
+            $this->checkBrowser();
+            
+            $this->browserUpdate();
         else:
             //$this->setSession();
             //$this->setTraffic();
             $this->trafficUpdate();
             $this->sessionUpdate();
+            $this->checkBrowser();
         endif;
 
         $this->date = null;
     }
+
+    /*
+     * **************************************************
+     * **********      SESSÂO DO USUÁRIO       **********
+     * **************************************************
+     */
 
     // Inicia a sessão do usuário
     private function setSession() {
@@ -53,6 +64,12 @@ class Session {
         $_SESSION['useronline']['online_endviews'] = date('Y-m-d H:i:s', strtotime("+{$this->cache}minutes"));
         $_SESSION['useronline']['online_url'] = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_DEFAULT);
     }
+
+    /*
+     * **************************************************
+     * ******** USUÁRIOS, VISITAS, ATUALIZAÇÕES *********
+     * **************************************************
+     */
 
     // Verifica e insere o tráfego na tabela
     private function setTraffic() {
@@ -80,6 +97,8 @@ class Session {
         $arrSiteViews = ['siteviews_pages' => $this->traffic['siteviews_pages'] + 1];
         $updatePageViews = new Update;
         $updatePageViews->exeUpdate('ws_siteviews', $arrSiteViews, 'WHERE siteviews_date = :date', "date={$this->date}");
+
+        $this->traffic = null;
     }
 
     // Obtem dados da tabela [ HELPER TRAFFIC ]
@@ -104,4 +123,44 @@ class Session {
         endif;
     }
 
+    /*
+     * **************************************************
+     * ********      NAVEGADORES DE ACESSO      *********
+     * **************************************************
+     */
+
+    // Identifica navegador do usuário!
+    private function checkBrowser() {
+        $this->browser = $_SESSION['useronline']['online_agent'];
+        if (strpos($this->browser, 'Chrome')):
+            $this->browser = 'Chrome';
+        elseif (strpos($this->browser, 'Firefox')):
+            $this->browser = 'Firefox';
+        elseif (strpos($this->browser, 'MSIE') || strpos($this->browser, 'Trident/')):
+            $this->browser = 'IE';
+        else:
+            $this->browser = 'Outros';
+        endif;
+    }
+
+    // Atualiza tabela com dados de navegadores
+    private function browserUpdate() {
+        $readAgent = new Read;
+        $readAgent->exeRead('ws_siteviews_agent', 'WHERE agent_name = :agent', "agent={$this->browser}");
+        if (!$readAgent->getResult()):
+           $ArrAgent = ['agent_name' => $this->browser, 'agent_views' => 1]; 
+           $createAgent = new Create;
+           $createAgent->exeCreate('ws_siteviews_agent', $ArrAgent);
+        else:
+           $ArrAgent = ['agent_views' => $readAgent->getResult()[0]['agent_views'] + 1]; 
+           $updateAgent = new Update;
+           $updateAgent->exeUpdate('ws_siteviews_agent', $ArrAgent, 'WHERE agent_name = :name', "name={$this->browser}");
+        endif;
+    }
+
+    /*
+     * **************************************************
+     * ********          USUÁRIOS ONLINE        *********
+     * **************************************************
+     */
 }
