@@ -28,7 +28,8 @@ class Session {
             $this->setTraffic();
             $this->setSession();
             $this->checkBrowser();
-            
+            $this->setUsuario();
+
             $this->browserUpdate();
         else:
             //$this->setSession();
@@ -36,6 +37,7 @@ class Session {
             $this->trafficUpdate();
             $this->sessionUpdate();
             $this->checkBrowser();
+            $this->usuarioUpdate();
         endif;
 
         $this->date = null;
@@ -51,8 +53,8 @@ class Session {
     private function setSession() {
         $_SESSION['useronline'] = [
             'online_session' => session_id(),
-            'online_startviews' => date('Y-m-d H:i:s'),
-            'online_endviews' => date('Y-m-d H:i:s', strtotime("+{$this->cache}minutes")),
+            'online_startview' => date('Y-m-d H:i:s'),
+            'online_endview' => date('Y-m-d H:i:s', strtotime("+{$this->cache}minutes")),
             'online_ip' => filter_input(INPUT_SERVER, 'REMOTE_ADDR', FILTER_VALIDATE_IP),
             'online_url' => filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_DEFAULT),
             'online_agent' => filter_input(INPUT_SERVER, 'HTTP_USER_AGENT', FILTER_DEFAULT)
@@ -61,7 +63,7 @@ class Session {
 
     // Atualiza sessão do usuario
     private function sessionUpdate() {
-        $_SESSION['useronline']['online_endviews'] = date('Y-m-d H:i:s', strtotime("+{$this->cache}minutes"));
+        $_SESSION['useronline']['online_endview'] = date('Y-m-d H:i:s', strtotime("+{$this->cache}minutes"));
         $_SESSION['useronline']['online_url'] = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_DEFAULT);
     }
 
@@ -148,13 +150,13 @@ class Session {
         $readAgent = new Read;
         $readAgent->exeRead('ws_siteviews_agent', 'WHERE agent_name = :agent', "agent={$this->browser}");
         if (!$readAgent->getResult()):
-           $ArrAgent = ['agent_name' => $this->browser, 'agent_views' => 1]; 
-           $createAgent = new Create;
-           $createAgent->exeCreate('ws_siteviews_agent', $ArrAgent);
+            $ArrAgent = ['agent_name' => $this->browser, 'agent_views' => 1];
+            $createAgent = new Create;
+            $createAgent->exeCreate('ws_siteviews_agent', $ArrAgent);
         else:
-           $ArrAgent = ['agent_views' => $readAgent->getResult()[0]['agent_views'] + 1]; 
-           $updateAgent = new Update;
-           $updateAgent->exeUpdate('ws_siteviews_agent', $ArrAgent, 'WHERE agent_name = :name', "name={$this->browser}");
+            $ArrAgent = ['agent_views' => $readAgent->getResult()[0]['agent_views'] + 1];
+            $updateAgent = new Update;
+            $updateAgent->exeUpdate('ws_siteviews_agent', $ArrAgent, 'WHERE agent_name = :name', "name={$this->browser}");
         endif;
     }
 
@@ -163,4 +165,38 @@ class Session {
      * ********          USUÁRIOS ONLINE        *********
      * **************************************************
      */
+
+    // Cadastra usuário online na tabela
+    private function setUsuario() {
+        $sesOnline = $_SESSION['useronline'];
+        $sesOnline['agent_name'] = $this->browser;
+
+        //var_dump($sesOnline);
+
+        $userCreate = new Create;
+        $userCreate->exeCreate('ws_siteviews_online', $sesOnline);
+    }
+
+    // Atualiza navegação do usuário online
+    private function usuarioUpdate() {
+        $arrOnline = [
+            'online_endview' => $_SESSION['useronline']['online_endview'],
+            'online_url' => $_SESSION['useronline']['online_url'],
+        ];
+
+
+        $userUpdate = new Update;
+        $userUpdate->exeUpdate('ws_siteviews_online', $arrOnline, 'WHERE online_session = :ses', "ses={$_SESSION['useronline']['online_session']}");
+
+        if (!$userUpdate->getRowCount()):
+            $readSes = new Read;
+            $readSes->exeRead('ws_siteviews_online', 'WHERE online_session = :onses', "onses={$_SESSION['useronline']['online_session']}");
+            if (!$readSes->getRowCount()):
+                $this->setUsuario();
+            endif;
+        endif;
+
+        var_dump($arrOnline);
+    }
+
 }
