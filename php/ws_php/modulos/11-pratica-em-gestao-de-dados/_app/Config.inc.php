@@ -11,7 +11,7 @@ define('DBSA', 'wsphp');
 
 function __autoload($class) {
     // Configuração de diretório
-    $cDir = ['Conn','Helpers'];
+    $cDir = ['Conn','Helpers','Models'];
     // Include diretório, para verificar se a inclusão ocorreu
     $iDir = null;
 

@@ -1,5 +1,8 @@
 <?php
+session_start();
 require('../_app/Config.inc.php');
+
+var_dump($_SESSION);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -19,12 +22,22 @@ require('../_app/Config.inc.php');
                 <h1>Administrar Site</h1>
 
                 <?php
-                wsErro("Os dados não conferem. Favor informe seu e-mail e senha!", WS_ERROR);
+                echo '<pre>';
+                $login = new Login(3);
+                //wsErro("Os dados não conferem. Favor informe seu e-mail e senha!", WS_ERROR);
                 
-                $teste = new Read;
+                
+                $dataLogin = filter_input_array(INPUT_POST, FILTER_DEFAULT);
+                if(!empty($dataLogin['AdminLogin'])):
+                    $login->exeLogin($dataLogin);
+                    var_dump($login);
+                endif;
+                
+                
+                echo '</pre>';
                 ?>
 
-                <form name="login" action="" method="post">
+                <form name="AdminLoginForm" action="" method="post">
                     <label>
                         <span>E-mail:</span>
                         <input type="email" name="user" />
@@ -35,7 +48,7 @@ require('../_app/Config.inc.php');
                         <input type="password" name="pass" />
                     </label>  
 
-                    <input type="submit" value="Logar" class="btn blue" />
+                    <input type="submit" name="AdminLogin" value="Logar" class="btn blue" />
 
                 </form>
             </div>
