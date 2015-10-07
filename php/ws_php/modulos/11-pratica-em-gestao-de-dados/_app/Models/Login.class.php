@@ -19,30 +19,40 @@ class Login {
     }
 
     public function exeLogin(array $userData) {
-        $this->email = (string) $userData['user'];
-        $this->senha = (string) $userData['pass'];
+        $this->email = (string) strip_tags(trim($userData['user']));
+        $this->senha = (string) strip_tags(trim($userData['pass']));
         $this->setLogin();
     }
 
-    function getResult() {
+    public function getResult() {
         return $this->result;
     }
-    
-    
-    function getError() {
+
+    public function getError() {
         return $this->error;
     }
 
-        
+    public function checkLogin() {
+        if (empty($_SESSION['userlogin']) || $_SESSION['userlogin']['user_level'] < $this->level):
+            unset($_SESSION['userlogin']);
+            return FALSE;
+        else:
+            return TRUE;
+        endif;
+    }
+
     // PRIVATES
 
     private function setLogin() {
         if (!$this->email || !$this->senha || !Check::email($this->email)):
-            $this->error = ['Informe seu email e senha para efetuar o login!', WS_ALERT];
+            $this->error = ['Informe seu email e senha para efetuar o login!', WS_INFOR];
+            $this->result = FALSE;
         elseif (!$this->getUser()):
             $this->error = ['Os dados informados não são compatíveis!', WS_ALERT];
+            $this->result = FALSE;
         elseif ($this->result['user_level'] < $this->level):
-            $this->error = ["Desculpe {$this->result['user_name']}, você não tem permissão para acessar esta área", WS_ALERT];
+            $this->error = ["Desculpe {$this->result['user_name']}, você não tem permissão para acessar esta área", WS_ERROR];
+            $this->result = FALSE;
         else:
             /* echo 'Logar aqui';
               die; */
@@ -51,6 +61,8 @@ class Login {
     }
 
     private function getUser() {
+        $this->senha = md5($this->senha);
+
         $read = new Read;
         $read->exeRead('ws_users', 'WHERE user_email = :e AND user_password = :p', "e={$this->email}&p={$this->senha}");
 

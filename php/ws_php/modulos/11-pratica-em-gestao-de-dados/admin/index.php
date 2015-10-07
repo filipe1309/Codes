@@ -2,7 +2,7 @@
 session_start();
 require('../_app/Config.inc.php');
 
-var_dump($_SESSION);
+//var_dump($_SESSION);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -25,15 +25,38 @@ var_dump($_SESSION);
                 echo '<pre>';
                 $login = new Login(3);
                 //wsErro("Os dados não conferem. Favor informe seu e-mail e senha!", WS_ERROR);
-                
-                
-                $dataLogin = filter_input_array(INPUT_POST, FILTER_DEFAULT);
-                if(!empty($dataLogin['AdminLogin'])):
-                    $login->exeLogin($dataLogin);
-                    var_dump($login);
+
+                if ($login->checkLogin()):
+                    header('Location: painel.php');
                 endif;
-                
-                
+
+                $dataLogin = filter_input_array(INPUT_POST, FILTER_DEFAULT);
+                if (!empty($dataLogin['AdminLogin'])):
+                    //echo md5($dataLogin['pass']);
+                    $login->exeLogin($dataLogin);
+                    //var_dump($login);
+
+                    if (!$login->getResult()):
+                        wsErro($login->getError()[0], $login->getError()[1]);
+                    else:
+                        header('Location: painel.php');
+                    endif;
+
+                endif;
+
+                $get = filter_input(INPUT_GET, 'exe', FILTER_DEFAULT);
+                if (!empty($get)):
+                    if ($get == 'restrito'):
+                        //http://localhost:8080/modulos/11-pratica-em-gestao-de-dados/admin/index.php?exe=restrito
+                        //echo 'Restrito!';
+                        wsErro('<b>Opss:</b> Acesso negado. Favor efetue login para acessar o painel!', WS_ALERT);
+                    elseif ($get == 'logoff'):
+                        //echo 'Deslogou';
+                        wsErro('<b>Sucesso ao deslogar:</b> Sua sessão foi finalizada volte sempre!', WS_ACCEPT);
+                    endif;
+                endif;
+
+
                 echo '</pre>';
                 ?>
 
