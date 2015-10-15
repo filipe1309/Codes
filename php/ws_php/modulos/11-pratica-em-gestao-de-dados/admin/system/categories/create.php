@@ -13,6 +13,26 @@ endif;
             <h1>Criar Categoria:</h1>
         </header>
 
+        <?php
+        $post = filter_input_array(INPUT_POST, FILTER_DEFAULT);
+        if (!empty($post['SendPostForm'])):
+            unset($post['SendPostForm']);
+            
+            require '_models/AdminCategory.class.php';
+            $cadastra = new AdminCategory;
+            $cadastra->exeCreate($post);
+            
+            if(!$cadastra->getResult()):
+                wsErro($cadastra->getError()[0], $cadastra->getError()[1]);
+            else:
+              echo $cadastra->getResult();  
+            endif;
+            
+//            echo '<pre>';
+//            var_dump($cadastra);
+//            echo '</pre>';
+        endif;
+        ?>
 
         <form name="PostForm" action="" method="post" enctype="multipart/form-data">
 
