@@ -10,28 +10,37 @@ endif;
     <article>
 
         <header>
-            <h1>Criar Categoria:</h1>
+            <h1>Atualizar Categoria:</h1>
         </header>
 
         <?php
         $data = filter_input_array(INPUT_POST, FILTER_DEFAULT);
+        $catid = filter_input(INPUT_GET, 'catid', FILTER_VALIDATE_INT);
+
         if (!empty($data['SendPostForm'])):
             unset($data['SendPostForm']);
 
             require '_models/AdminCategory.class.php';
             $cadastra = new AdminCategory;
-            $cadastra->exeCreate($data);
-
-            if (!$cadastra->getResult()):
-                wsErro($cadastra->getError()[0], $cadastra->getError()[1]);
-            else:
-                //echo $cadastra->getResult();
-                header('Location: painel.php?exe=categories/update&create=true&catid='.$cadastra->getResult());
-            endif;
+            $cadastra->exeUpdate($catid, $data);
 
 //            echo '<pre>';
 //            var_dump($cadastra);
 //            echo '</pre>';
+
+            wsErro($cadastra->getError()[0], $cadastra->getError()[1]);
+
+//            echo '<pre>';
+//            var_dump($cadastra);
+//            echo '</pre>';
+        else:
+            $read = new Read;
+            $read->exeRead('ws_categories', "WHERE category_id =:id", "id={$catid}");
+            if (!$read->getResult()):
+                header('Location: painel.php?exe=categories/index&update=false');
+            else:
+                $data = $read->getResult()[0];
+            endif;
         endif;
         ?>
 
@@ -67,11 +76,11 @@ endif;
                         else:
                             foreach ($readSes->getResult() as $ses):
                                 echo "<option value=\"{$ses['category_id']}\" ";
-                                
-                                if($ses['category_id'] == $data['category_parent']):
+
+                                if ($ses['category_id'] == $data['category_parent']):
                                     echo ' selected="selected" ';
                                 endif;
-                                
+
                                 echo "> {$ses['category_title']} </option>";
                             endforeach;
                         endif;
@@ -82,7 +91,7 @@ endif;
 
             <div class="gbform"></div>
 
-            <input type="submit" class="btn green" value="Cadastrar Categoria" name="SendPostForm" />
+            <input type="submit" class="btn blue" value="Atualizar Categoria" name="SendPostForm" />
         </form>
 
     </article>

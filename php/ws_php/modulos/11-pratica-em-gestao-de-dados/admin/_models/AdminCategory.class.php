@@ -29,6 +29,21 @@ class AdminCategory {
             $this->create();
         endif;
     }
+    
+    public function exeUpdate($categoryId, array $data) {
+        $this->catId = (int) $categoryId;
+        $this->data = $data;
+
+        if (in_array('', $this->data)):
+            $this->result = false;
+            $this->error = ["<b>Erro ao atualizar:</b> Para atualizar a categoria {$this->data['category_title']}, preencha todos os campos!", WS_ALERT];
+        else:
+            //echo "Pode cadastrar";
+            $this->setData();
+            $this->setName();
+            $this->update();
+        endif;
+    }
 
     function getResult() {
         return $this->result;
@@ -68,4 +83,12 @@ class AdminCategory {
         endif;
     }
     
+    private function update() {
+        $update = new Update;
+        $update->exeUpdate(self::entity, $this->data, 'WHERE category_id = :catid', "catid={$this->catId}");
+        if($update->getResult()):
+            $this->result = true;
+            $this->error = ["<b>Sucesso:</b> A categoria {$this->data['category_title']} foi atualizada no sistema", WS_ACCEPT];
+        endif;
+    }
 }
