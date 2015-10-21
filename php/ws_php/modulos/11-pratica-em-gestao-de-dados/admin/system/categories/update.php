@@ -37,11 +37,18 @@ endif;
             $read = new Read;
             $read->exeRead('ws_categories', "WHERE category_id =:id", "id={$catid}");
             if (!$read->getResult()):
-                header('Location: painel.php?exe=categories/index&update=false');
+                header('Location: painel.php?exe=categories/index&empty=true');
             else:
                 $data = $read->getResult()[0];
             endif;
         endif;
+        
+        $checkCreate = filter_input(INPUT_GET, 'create', FILTER_VALIDATE_BOOLEAN);
+        if($checkCreate):
+            $tipo = ( empty($data['category_parent']) ? 'seção' : 'categoria' );
+            wsErro("A {$tipo} <b>{$data['category_title']}</b> foi cadastrada com sucesso no sistema", WS_ACCEPT);
+        endif;
+        
         ?>
 
         <form name="PostForm" action="" method="post" enctype="multipart/form-data">
