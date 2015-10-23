@@ -8,6 +8,18 @@
         if ($empty):
             wsErro("Você tentou editar uma categoria que não existe no sistema!", WS_INFOR);
         endif;
+        
+        $delCat = filter_input(INPUT_GET, 'delete', FILTER_VALIDATE_INT);
+        if($delCat):
+            require '_models/AdminCategory.class.php';
+            $deletar = new AdminCategory;
+            $deletar->exeDelete($delCat);
+            
+            wsErro($deletar->getError()[0], $deletar->getError()[1]);
+            /*echo '<pre>';
+            var_dump($deletar);
+            echo '</pre>';*/
+        endif;
 
         $readSes = new Read;
         $readSes->exeRead('ws_categories', 'WHERE category_parent IS NULL ORDER BY category_title ASC');
