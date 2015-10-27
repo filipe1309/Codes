@@ -15,9 +15,28 @@
         $post = filter_input_array(INPUT_POST, FILTER_DEFAULT);
         if (isset($post) && $post['SendPostForm']):
 
-            echo '<pre>';
-            var_dump($post);
-            echo '</pre>';
+            $post['post_status'] = ($post['SendPostForm'] == 'Cadastrar' ? '0' : '1');
+            $post['post_cover'] = ( $_FILES['post_cover']['tmp_name'] ? $_FILES['post_cover'] : null);
+            unset($post['SendPostForm']);
+
+            require '_models/AdminPost.class.php';
+            $cadastra = new AdminPost;
+            $cadastra->exeCreate($post);
+
+            if ($cadastra->getResult()):
+
+                // Enviar a galeria caso exista!
+
+                echo 'Tudo certo!';
+
+            else:
+                wsErro($cadastra->getError()[0], $cadastra->getError()[1]);
+                
+            endif;
+
+        /* echo '<pre>';
+          var_dump($cadastra);
+          echo '</pre>'; */
         endif;
         ?>
 
@@ -111,12 +130,12 @@
                 </label>
 
                 <ul class="gallery" style="display: none">
-<?php for ($i = 1; $i <= 10; $i++): ?>
+                    <?php for ($i = 1; $i <= 10; $i++): ?>
                         <li<?php if ($i % 5 == 0) echo ' class="right"'; ?>>
                             <div class="img thumb_small"></div>
                             <a class="del" href="#delete">Deletar</a>                    
                         </li>
-<?php endfor; ?>
+                    <?php endfor; ?>
                 </ul>                
             </div>
 
