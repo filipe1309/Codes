@@ -3,7 +3,7 @@
     <article>
 
         <header>
-            <h1>Criar Post:</h1>
+            <h1>Atualizar Post:</h1>
         </header>
 
 
@@ -139,7 +139,7 @@
                     <input type="file" multiple name="gallery_covers[]" />
                 </label>
 
-                <!--ul class="gallery" style="display: none">
+                <ul class="gallery" style="display: none">
                     <?php for ($i = 1; $i <= 10; $i++): ?>
                         <li<?php if ($i % 5 == 0) echo ' class="right"'; ?>>
                             <div class="img thumb_small"></div>
@@ -147,7 +147,7 @@
                         </li>
                     <?php endfor; ?>
                 </ul>                
-            </div-->
+            </div>
 
 
             <input type="submit" class="btn blue" value="Cadastrar" name="SendPostForm" />

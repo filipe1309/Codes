@@ -40,6 +40,68 @@ class AdminPost {
         endif;
     }
 
+    public function gbSend(array $images, $postId) {
+        $this->post = (int) $postId;
+        $this->data = $images;
+
+        $imageName = new Read;
+        $imageName->exeRead(self::entity, 'WHERE post_id = :id', "id={$this->post}");
+        if (!$imageName->getResult()):
+            $this->error = ["Erro ao enviar galeria. O indice {$this->post} não foi encontrado no banco!", WS_ERROR];
+            $this->result = false;
+        else:
+            $imageName = $imageName->getResult()[0]['post_name'];
+            //echo $imageName;
+
+            $gbFiles = array();
+            $gbCount = count($this->data['tmp_name']);
+
+            $gbKeys = array_keys($this->data);
+
+            for ($gb = 0; $gb < $gbCount; $gb++):
+                foreach ($gbKeys as $keys):
+                    $gbFiles[$gb][$keys] = $this->data[$keys][$gb];
+                endforeach;
+            endfor;
+            /* echo '<pre>';
+              var_dump($gbFiles);
+              echo '</pre>'; */
+
+            $gbSend = new Upload;
+            $i = $u = 0;
+
+            foreach ($gbFiles as $gbUpload):
+                $i++;
+                $imgName = "{$imageName}-gb-{$this->post}-" . (substr(md5(time() + $i), 0, 5));
+                //echo $imgName.'<br>';
+                $gbSend->image($gbUpload, $imgName);
+
+                if ($gbSend->getResult()):
+                    $gbImage = $gbSend->getResult();
+                    $gbCreate = ['post_id' => $this->post, 'gallery_image' => $gbImage, 'gallery_date' => date('Y-m-d H:i:s')];
+                    $insertGb = new Create;
+                    $insertGb->exeCreate('ws_posts_gallery', $gbCreate);
+                    $u++;
+                endif;
+            endforeach;
+
+            if ($u >= 1):
+                $this->error = ["Galeria atualizada: Foram enviadas {$u} imagens para galeria deste post!", WS_ACCEPT];
+                $this->result = true;
+
+            endif;
+            
+            /* echo '<pre>';
+              var_dump($this);
+              echo '</pre>'; */
+
+
+        endif;
+        /* echo '<pre>';
+          var_dump($images);
+          echo '</pre>'; */
+    }
+
     function getResult() {
         return $this->result;
     }
