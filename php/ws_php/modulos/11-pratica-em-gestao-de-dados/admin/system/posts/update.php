@@ -13,41 +13,60 @@
 //        EchoMsg("Sucesso:", "Seu post foi cadastrado com sucesso. <a target=\"_blank\" href=\"../artigo/titulo\">Ver Post</a>", ACCEPT);
 
         $post = filter_input_array(INPUT_POST, FILTER_DEFAULT);
+        $postid = filter_input(INPUT_GET, 'post_id', FILTER_VALIDATE_INT);
+
         if (isset($post) && $post['SendPostForm']):
 
-            $post['post_status'] = ($post['SendPostForm'] == 'Cadastrar' ? '0' : '1');
-            $post['post_cover'] = ( $_FILES['post_cover']['tmp_name'] ? $_FILES['post_cover'] : null);
+            $post['post_status'] = ($post['SendPostForm'] == 'Atualizar' ? '0' : '1');
+            $post['post_cover'] = ( $_FILES['post_cover']['tmp_name'] ? $_FILES['post_cover'] : 'null');
             unset($post['SendPostForm']);
 
             require '_models/AdminPost.class.php';
             $cadastra = new AdminPost;
-            $cadastra->exeCreate($post);
+            $cadastra->exeUpdate($postid, $post);
+            
+            //var_dump($cadastra);
 
-            if ($cadastra->getResult()):
+            //if ($cadastra->getResult()):
+                wsErro($cadastra->getError()[0], $cadastra->getError()[1]);
 
                 // Enviar a galeria caso exista!
                 if (!empty($_FILES['gallery_covers']['tmp_name'])):
                     $sendGallery = new AdminPost;
-                    $sendGallery->gbSend($_FILES['gallery_covers'], $cadastra->getResult());
+                    $sendGallery->gbSend($_FILES['gallery_covers'], $postid);
                 /* echo '<pre>';
                   var_dump($sendGallery);
                   echo '</pre>'; */
                 endif;
 
-                header('Location: painel.php?exe=posts/update&create=true&postid=' . $cadastra->getResult());
+                //header('Location: painel.php?exe=posts/update&create=true&postid=' . $cadastra->getResult());
 
             //echo 'Tudo certo!';
             // Executar Location
 
-            else:
-                wsErro($cadastra->getError()[0], $cadastra->getError()[1]);
+            //else:
 
-            endif;
+            //endif;
 
         /* echo '<pre>';
           var_dump($cadastra);
           echo '</pre>'; */
+        else:
+            $read = new Read;
+            $read->exeRead('ws_posts', 'WHERE post_id = :id', "id={$postid}");
+            if (!$read->getResult()):
+                header('Location: painel.php?exe=posts/index&empty=true');
+            else:
+                $post = $read->getResult()[0];
+            $post['post_date'] = date('d/m/Y H:i:s', strtotime($post['post_date']));
+            endif;
         endif;
+        
+        $checkCreate = filter_input(INPUT_GET, 'create', FILTER_VALIDATE_BOOLEAN);
+        if($checkCreate && empty($cadastra)):
+            wsErro("O post <b>{$post['post_title']}</b> foi cadastrado com sucesso no sistema!", WS_ACCEPT);
+        endif;
+        
         ?>
 
 
@@ -150,8 +169,8 @@
             </div>
 
 
-            <input type="submit" class="btn blue" value="Cadastrar" name="SendPostForm" />
-            <input type="submit" class="btn green" value="Cadastrar & Publicar" name="SendPostForm" />
+            <input type="submit" class="btn blue" value="Atualizar" name="SendPostForm" />
+            <input type="submit" class="btn green" value="Atualizar & Publicar" name="SendPostForm" />
 
         </form>
 

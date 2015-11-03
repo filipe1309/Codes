@@ -141,8 +141,9 @@ class AdminCategory {
         $update = new Update;
         $update->exeUpdate(self::entity, $this->data, 'WHERE category_id = :catid', "catid={$this->catId}");
         if ($update->getResult()):
+            $tipo = ( empty($this->data['category_parent']) ? 'seção' : 'categoria' );
             $this->result = true;
-            $this->error = ["<b>Sucesso:</b> A categoria {$this->data['category_title']} foi atualizada no sistema", WS_ACCEPT];
+            $this->error = ["<b>Sucesso:</b> A {$tipo} {$this->data['category_title']} foi atualizada no sistema", WS_ACCEPT];
         endif;
     }
 

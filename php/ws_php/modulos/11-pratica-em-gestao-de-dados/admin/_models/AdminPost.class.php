@@ -40,6 +40,44 @@ class AdminPost {
         endif;
     }
 
+    public function exeUpdate($postId, array $data) {
+        $this->post = (int) $postId;
+        $this->data = $data;
+
+
+        if (in_array('', $this->data)):
+            $this->error = ['Para atualizar este post, preecha todos os campos ( Capa não precisa ser enviada! )', WS_ALERT];
+            $this->result = false;
+        else:
+            $this->setData();
+            $this->setName();
+
+            if (is_array($this->data['post_cover'] )):
+                $readCapa = new Read;
+                $readCapa->exeRead(self::entity, 'WHERE post_id = :post', "post={$this->post}");
+
+                $capa = '../uploads/' . $readCapa->getResult()[0]['post_cover'];
+                //echo $capa;
+                if (file_exists($capa) && !is_dir($capa)):
+                    //echo 'capa existe';
+                    unlink($capa);
+                endif;
+
+                $uploadCapa = new Upload;
+                $uploadCapa->image($this->data['post_cover'], $this->data['post_name']);
+            endif;
+
+
+            if (isset($uploadCapa) && $uploadCapa->getResult()):
+                $this->data['post_cover'] = $uploadCapa->getResult();
+                $this->update();
+            else:
+                unset($this->data['post_cover']);
+                $this->update();
+            endif;
+        endif;
+    }
+
     public function gbSend(array $images, $postId) {
         $this->post = (int) $postId;
         $this->data = $images;
@@ -90,10 +128,10 @@ class AdminPost {
                 $this->result = true;
 
             endif;
-            
-            /* echo '<pre>';
-              var_dump($this);
-              echo '</pre>'; */
+
+        /* echo '<pre>';
+          var_dump($this);
+          echo '</pre>'; */
 
 
         endif;
@@ -157,6 +195,15 @@ class AdminPost {
         if ($cadastra->getResult()):
             $this->error = ["O post {$this->data['post_title']} foi cadastrado com sucesso no sistema!", WS_ACCEPT];
             $this->result = $cadastra->getResult();
+        endif;
+    }
+
+    private function update() {
+        $update = new Update;
+        $update->exeUpdate(self::entity, $this->data, 'WHERE post_id = :id', "id={$this->post}");
+        if ($update->getResult()):
+            $this->error = ["O post <b>{$this->data['post_title']}</b> foi atualizado com sucesso no sistema!", WS_ACCEPT];
+            $this->result = TRUE;
         endif;
     }
 

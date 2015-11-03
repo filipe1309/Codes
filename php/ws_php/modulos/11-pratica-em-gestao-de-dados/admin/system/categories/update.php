@@ -44,7 +44,7 @@ endif;
         endif;
         
         $checkCreate = filter_input(INPUT_GET, 'create', FILTER_VALIDATE_BOOLEAN);
-        if($checkCreate):
+        if($checkCreate && empty($cadastra)):
             $tipo = ( empty($data['category_parent']) ? 'seção' : 'categoria' );
             wsErro("A {$tipo} <b>{$data['category_title']}</b> foi cadastrada com sucesso no sistema", WS_ACCEPT);
         endif;
