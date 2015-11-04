@@ -1,5 +1,5 @@
 <?php
-define('HOME', 'http://localhost:8080/modulos/08-classes-auxiliares');
+define('HOME', 'http://localhost:8080/modulos/11-pratica-em-gestao-de-dados');
 
 // CONFIGURAÇÕES DO SITE ####################
 define('HOST', 'localhost'); // runtime, se fosse cont seria compile time

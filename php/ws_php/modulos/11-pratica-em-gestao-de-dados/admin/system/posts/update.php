@@ -24,29 +24,25 @@
             require '_models/AdminPost.class.php';
             $cadastra = new AdminPost;
             $cadastra->exeUpdate($postid, $post);
-            
+
             //var_dump($cadastra);
-
             //if ($cadastra->getResult()):
-                wsErro($cadastra->getError()[0], $cadastra->getError()[1]);
+            wsErro($cadastra->getError()[0], $cadastra->getError()[1]);
 
-                // Enviar a galeria caso exista!
-                if (!empty($_FILES['gallery_covers']['tmp_name'])):
-                    $sendGallery = new AdminPost;
-                    $sendGallery->gbSend($_FILES['gallery_covers'], $postid);
-                /* echo '<pre>';
-                  var_dump($sendGallery);
-                  echo '</pre>'; */
-                endif;
+            // Enviar a galeria caso exista!
+            if (!empty($_FILES['gallery_covers']['tmp_name'])):
+                $sendGallery = new AdminPost;
+                $sendGallery->gbSend($_FILES['gallery_covers'], $postid);
+            /* echo '<pre>';
+              var_dump($sendGallery);
+              echo '</pre>'; */
+            endif;
 
-                //header('Location: painel.php?exe=posts/update&create=true&postid=' . $cadastra->getResult());
-
-            //echo 'Tudo certo!';
-            // Executar Location
-
-            //else:
-
-            //endif;
+        //header('Location: painel.php?exe=posts/update&create=true&postid=' . $cadastra->getResult());
+        //echo 'Tudo certo!';
+        // Executar Location
+        //else:
+        //endif;
 
         /* echo '<pre>';
           var_dump($cadastra);
@@ -58,15 +54,14 @@
                 header('Location: painel.php?exe=posts/index&empty=true');
             else:
                 $post = $read->getResult()[0];
-            $post['post_date'] = date('d/m/Y H:i:s', strtotime($post['post_date']));
+                $post['post_date'] = date('d/m/Y H:i:s', strtotime($post['post_date']));
             endif;
         endif;
-        
+
         $checkCreate = filter_input(INPUT_GET, 'create', FILTER_VALIDATE_BOOLEAN);
-        if($checkCreate && empty($cadastra)):
+        if ($checkCreate && empty($cadastra)):
             wsErro("O post <b>{$post['post_title']}</b> foi cadastrado com sucesso no sistema!", WS_ACCEPT);
         endif;
-        
         ?>
 
 
@@ -151,20 +146,47 @@
 
             </div><!--/line-->
 
-            <div class="label gbform">
+            <div class="label gbform" id="gbfoco">
 
                 <label class="label">             
                     <span class="field">Enviar Galeria:</span>
                     <input type="file" multiple name="gallery_covers[]" />
                 </label>
 
-                <ul class="gallery" style="display: none">
-                    <?php for ($i = 1; $i <= 10; $i++): ?>
-                        <li<?php if ($i % 5 == 0) echo ' class="right"'; ?>>
-                            <div class="img thumb_small"></div>
-                            <a class="del" href="#delete">Deletar</a>                    
-                        </li>
-                    <?php endfor; ?>
+                <?php
+                $delGb = filter_input(INPUT_GET, 'gbdel', FILTER_VALIDATE_INT);
+                if ($delGb):
+                    require_once '_models/AdminPost.class.php';
+
+                    $delGallery = new AdminPost;
+                    $delGallery->gbRemove($delGb);
+
+
+                    wsErro($delGallery->getError()[0], $delGallery->getError()[1]);
+
+
+                endif;
+                ?>
+
+                <ul class="gallery">
+                    <?php
+                    $gbi = 0;
+                    $gallery = new Read;
+                    $gallery->exeRead('ws_posts_gallery', 'WHERE post_id = :post', "post={$postid}");
+                    if ($gallery->getResult()):
+                        foreach ($gallery->getResult() as $gb):
+                            $gbi++;
+                            ?>
+                            <li<?php if ($gbi % 5 == 0) echo ' class="right"'; ?>>
+                                <div class="img thumb_small">
+                                    <?= Check::image('../uploads/' . $gb['gallery_image'], $gbi, 146, 100); ?> 
+                                </div>
+                                <a href="painel.php?exe=posts/update&postid=<?= $postid; ?>&gbdel=<?= $gb['gallery_id']; ?>#gbfoco" class="del" >Deletar</a>
+                            </li>
+                            <?php
+                        endforeach;
+                    endif;
+                    ?>
                 </ul>                
             </div>
 

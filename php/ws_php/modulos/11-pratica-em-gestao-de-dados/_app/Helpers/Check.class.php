@@ -125,7 +125,9 @@ class Check {
 
     public static function image($imageUrl, $imageDesc, $imageW = null, $imageH = null) {
 
-        self::$data = 'uploads/' . $imageUrl;
+        //self::$data = 'uploads/' . $imageUrl;
+        self::$data = $imageUrl;
+
 
         if (file_exists(self::$data) && !is_dir(self::$data)):
             $path = HOME;

@@ -52,7 +52,7 @@ class AdminPost {
             $this->setData();
             $this->setName();
 
-            if (is_array($this->data['post_cover'] )):
+            if (is_array($this->data['post_cover'])):
                 $readCapa = new Read;
                 $readCapa->exeRead(self::entity, 'WHERE post_id = :post', "post={$this->post}");
 
@@ -138,6 +138,29 @@ class AdminPost {
         /* echo '<pre>';
           var_dump($images);
           echo '</pre>'; */
+    }
+
+    public function gbRemove($gbImageId) {
+        $this->post = (int) $gbImageId;
+        $readGb = new Read;
+        $readGb->exeRead('ws_posts_gallery', 'WHERE gallery_id = :gb', "gb={$this->post}");
+
+        if ($readGb->getResult()):
+            $imagem = '../uploads/' . $readGb->getResult()[0]['gallery_image'];
+//             echo $imagem;
+            if (file_exists($imagem) && !is_dir($imagem)):
+                unlink($imagem);
+            endif;
+
+            $deleta = new Delete;
+            $deleta->exeDelete('ws_posts_gallery', 'WHERE gallery_id = :id', "id={$this->post}");
+            if ($deleta->getResult()):
+                $this->error = ["A imagem foi removida com sucesso da galeria!", WS_ACCEPT];
+                $this->result = true;
+
+            endif;
+
+        endif;
     }
 
     function getResult() {
